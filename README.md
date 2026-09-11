@@ -1,74 +1,174 @@
 # Miba Alibaba Product Import
 
-用于 Codex 的 Alibaba 商品导入技能：从商品链接完整提取可核实资料，生成模块化英文详情、产品封面、组图与应用场景图，转换 WebP、上传 ImgBB，并回填及校验 CSV。
+A Codex skill that turns Alibaba product links in a CSV import sheet into English product content for MiBA.
 
-## 功能
+It can:
 
-- 保留输入 CSV 的原字段、未知列与行顺序。
-- 独立编写英文标题、SEO 元数据、产品详情及六个采购 FAQ。
-- 使用 imagegen 重新生成 1 张封面、至少 4 张独立组图及详情/应用图，保留真实产品身份并重新设计画面，按规则处理尺寸和 WebP 压缩。
-- 详情顺序固定为：英文产品正文 → 随包公司简介 → Factory Photo → MiBA Logo Options → MiBA Accessory Options → 六个 FAQ。
-- 详情最大宽度 1400px，各版块左右外层 padding 为 0，版块标题使用加粗居中的 H2，兼顾移动端阅读。
-- `pro_fields` 在同一 CSV 单元格内保留 4–8 条已验证卖点，各占一行，不添加项目符号、点、横线、编号或旧版专用分隔符。
-- 附带图片处理、上传、HTML 拼接、输出校验脚本及测试。
+- extract verifiable product titles, specifications, variant details, packaging information, and reference images;
+- write independent English product descriptions, six purchasing FAQs, SEO titles, meta descriptions, and file-name slugs;
+- generate a new product cover, at least four distinct gallery images, separate detail images, and an application scene with imagegen;
+- preserve the product's observed structure, proportions, labels, and connections while creating independent image compositions;
+- generate `pro_fields` as four to eight plain lines without leading bullets, dots, dashes, numbering, or the legacy separator;
+- insert the supplied company profile, then Factory Photo, MiBA Logo Options, and MiBA Accessory Options, with all six FAQs at the bottom;
+- create responsive product details with a centered 1400px maximum width and bold, centered H2 section headings;
+- convert images to WebP, upload them to ImgBB, and populate the CSV with Direct links;
+- preserve source links, API-key values, unknown columns, and row order;
+- validate the completed CSV, local assets, upload manifests, and review records before delivery.
 
-目标网站品牌使用 MiBA，在标题、SEO 和正文中自然展示；不继承来源商家或模板示例的品牌，也不将供应商资质、认证和公司能力归属于 MiBA。固定公司简介保留随包原文。
+MiBA is the target website brand. Source supplier qualifications, certifications, and company capabilities must not be presented as MiBA's own. The bundled company profile remains verbatim user-supplied content.
 
-## 安装
+## Install with Codex
 
-将此仓库完整克隆到 Codex 的个人技能目录。Windows PowerShell 示例（目标目录应不存在）：
-
-```powershell
-$skillRoot = Join-Path $env:USERPROFILE '.codex/skills'
-git clone https://github.com/xiaodong-wu/miba-alibaba-product-import.git (Join-Path $skillRoot 'miba-alibaba-product-import')
-```
-
-如自定义了 CODEX_HOME，请将技能放到对应的 skills 目录。也可以下载仓库 ZIP，解压后将包含 SKILL.md 的目录命名为 miba-alibaba-product-import，放入个人技能目录。
-
-运行辅助脚本需要 Python 3.10+ 和 Pillow。在仓库根目录安装依赖：
+Ask Codex:
 
 ```text
-python -m pip install -r requirements.txt
+Use $skill-installer to install the skill at the root of this repository
+with the name miba-alibaba-product-import:
+https://github.com/xiaodong-wu/miba-alibaba-product-import
 ```
 
-执行完整流程还需要可用的网页浏览能力、imagegen 图像生成能力，以及用户自己的 ImgBB API Key。脚本本身不提供网页事实提取或 AI 图像生成。
+Or run the bundled installer directly:
 
-## 使用
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
+  --repo xiaodong-wu/miba-alibaba-product-import \
+  --path . \
+  --name miba-alibaba-product-import
+```
 
-从 assets/content_import_template.csv 复制空白表头到任务目录，为每条商品填写 link 与 IMGBB_API_KEY，然后在 Codex 中请求：
+The skill lives at the repository root. The installation destination must not already exist; back up an existing installation before replacing it. The skill becomes available on the next Codex turn.
+
+The helper scripts require Python 3.10+ and [Pillow](https://pypi.org/project/pillow/). Install the dependency from the repository root:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+The complete workflow also needs browser access to Alibaba, imagegen, and an ImgBB API key supplied in the input CSV. The Python scripts handle preparation, upload, composition, and validation; they do not browse product pages or generate images themselves.
+
+## Use
 
 ```text
-使用 $miba-alibaba-product-import 处理这个 Alibaba 商品 CSV，生成英文详情、封面、至少四张组图及应用场景图，按规则插入固定公司简介和三个固定图片版块，并将六个 FAQ 放在最底部。
+Use $miba-alibaba-product-import to process this Alibaba product import CSV.
 ```
 
-默认使用 MiBA 品牌、随包公司资料和随包产品优化规范；用户当前明确要求优先。
+Provide a CSV containing `link` and `IMGBB_API_KEY` for each product. The [blank import template](assets/content_import_template.csv) provides the headers. An existing `template` column is preserved but not used to generate the new detail.
 
-执行规则见 [SKILL.md](SKILL.md)，命令及交付格式见 [字段与交付规则](references/schema-and-workflow.md)。随包 [产品优化规范](references/google-product-seo-requirements.md) 是用户提供文档的快照，并非自动更新的 Google 官方规则。
+The skill preserves the source file and writes `<input-stem>_completed.csv`. Final WebP files are saved under `images/<file_name>/` beside the output table, with evidence, image/upload manifests, and review/validation reports.
 
-## 随包图片
-
-以下三张 PNG 保留原始内容，执行导入时仅按规则转换和压缩为 WebP：
-
-- [Factory Photo](assets/fixed-blocks/Factory%20Photo.png)
-- [MiBA Logo Options](assets/fixed-blocks/MiBA%20Logo%20Options.png)
-- [MiBA Accessory Options](assets/fixed-blocks/MiBA%20Accessory%20Options.png)
-
-路径和顺序详见 [固定图片版块规则](references/fixed-blocks.md)。直接读取技能目录内的随包素材，无需查找特定电脑桌面路径；图片中的示例商标不应被自动套用到商品上。
-
-## 密钥与任务数据
-
-IMGBB_API_KEY 仅由上传脚本从用户的本地 CSV 读取。输入和完成版 CSV 都可能含密钥，不应提交到 GitHub；仓库仅包含空白字段模板。默认忽略 CSV、环境文件、Python 缓存及常见任务输出目录。
-
-## 测试
-
-在仓库根目录运行现有本地测试：
+Each product gallery contains one cover and at least four gallery images. Detail, application, and supplied fixed images are separate from CSV `images`. The final detail order is:
 
 ```text
-python -m unittest discover -s scripts -p test_workflow.py -v
+English product body
+Company Profile
+Factory Photo
+MiBA Logo Options
+MiBA Accessory Options
+Six FAQs
 ```
 
-本地测试不代表实时 Alibaba 访问、AI 图像质量或实际 ImgBB 上传已经通过；完整任务仍需事实核查、视觉复核和输出校验。
+The workflow follows the bundled [product optimization requirements](references/google-product-seo-requirements.md), an English translation of a user-provided specification snapshot. It is not an automatically updated Google policy library or a guarantee of indexing or rankings.
 
-## 来源与许可
+## Repository layout
 
-保留原有 [MIT LICENSE](LICENSE)。上传辅助脚本来源及改动说明见 [字段与交付规则](references/schema-and-workflow.md#源码来源)。
+```text
+miba-alibaba-product-import/
+├── SKILL.md
+├── agents/openai.yaml
+├── assets/
+│   ├── company-profile.html
+│   ├── content_import_template.csv
+│   └── fixed-blocks/
+│       ├── Factory Photo.png
+│       ├── MiBA Logo Options.png
+│       └── MiBA Accessory Options.png
+├── references/
+│   ├── schema-and-workflow.md
+│   ├── source-coverage.md
+│   ├── content-layout.md
+│   ├── image-workflow.md
+│   ├── identity-and-miba-layout.md
+│   ├── fixed-blocks.md
+│   ├── company-profile.md
+│   ├── google-product-seo-requirements.md
+│   └── product-detail-layout-source.txt
+├── scripts/
+│   ├── prepare_images.py
+│   ├── upload_images_to_imgbb.py
+│   ├── compose_content.py
+│   ├── validate_output.py
+│   └── test_workflow.py
+├── requirements.txt
+└── LICENSE
+```
+
+The commands below run from the repository root. When using an installed skill from another working directory, replace `scripts/` with the absolute path to that installation's scripts directory.
+
+## Prepare images
+
+Generate and visually review product images with imagegen first. Create an image plan using the roles documented in [Image workflow](references/image-workflow.md), including the three supplied fixed assets described in [Fixed blocks](references/fixed-blocks.md).
+
+```bash
+python3 scripts/prepare_images.py \
+  /absolute/path/to/image-plan.json \
+  --output-dir /absolute/path/to/images/product-slug
+```
+
+Cover and gallery images become 800×800 WebP. Application scenes must be at least 1200px wide. Compression starts at quality 82 and method 6, with readability taking priority over the approximate 100 KB target. Fixed assets retain their original pixel dimensions, content, and proportions; they are converted, not regenerated. Use a fresh output directory and manifest path for each preparation run.
+
+## Upload images to ImgBB
+
+Add the ImgBB API key to `IMGBB_API_KEY` in each populated CSV row. The uploader reads that field directly and never prints the value or writes it to the upload manifest.
+
+```bash
+python3 scripts/upload_images_to_imgbb.py \
+  /absolute/path/to/images/product-slug \
+  --csv-file /absolute/path/to/input.csv \
+  --row-number 2 \
+  --manifest /absolute/path/to/upload-manifests/product-slug.json
+```
+
+The uploader uses [ImgBB API v1](https://api.imgbb.com/), enforces the 32 MB limit, and records only WebP `data.url` Direct links. Keys and delete URLs are excluded from the manifest. `--row-number 2` means the first product record after the header, regardless of embedded newlines in CSV cells.
+
+Populate a row's image fields only after all required uploads succeed. Preserve and inspect a partial manifest before retrying; the uploader does not resume automatically. Input and completed CSVs retain API keys and must not be committed to GitHub or shared as public examples.
+
+## Compose product details
+
+Author the product body and a final section marked `miba_faq_section` containing six `xb_faq_item` entries. The composer inserts the fixed company profile and three ordered image blocks, then places the FAQ last.
+
+```bash
+python3 scripts/compose_content.py \
+  --detail-file /absolute/path/to/product.detail.html \
+  --image-manifest /absolute/path/to/images/product-slug.image-manifest.json \
+  --upload-manifest /absolute/path/to/upload-manifests/product-slug.json \
+  --output /absolute/path/to/content.html
+```
+
+The composer requires completed uploads and a fresh output file. It produces an HTML fragment; use a CSV-aware writer to populate `content` and the other generated fields.
+
+## Validate
+
+Record completed factual, coverage, image, layout, and visual checks in `review.json`, following [Fields and workflow](references/schema-and-workflow.md). Review the complete detail at desktop and mobile widths before marking visual checks as passed.
+
+```bash
+python3 scripts/validate_output.py \
+  /absolute/path/to/input.csv \
+  /absolute/path/to/input_completed.csv \
+  --images-dir /absolute/path/to/images \
+  --review /absolute/path/to/review.json \
+  --report /absolute/path/to/validation.json
+```
+
+Keep `upload-manifests/` beside `images/`. Exit code `0` means local validation passed without skipped or blocked rows, `2` indicates a partial result, and `1` indicates validation errors. Report deployment checks separately: local validation does not certify live CMS headings, canonical URLs, indexing, or Core Web Vitals.
+
+Run the offline workflow tests from the repository root:
+
+```bash
+python3 -m unittest discover -s scripts -p test_workflow.py -v
+```
+
+These tests do not perform live Alibaba extraction, image generation, or ImgBB uploads.
+
+## License
+
+Released under the [MIT License](LICENSE). The uploader is based on MIT-licensed code from [Xinbada Alibaba Product Import](https://github.com/xiaodong-wu/xinbada-alibaba-product-import); see [source attribution](references/schema-and-workflow.md#source-attribution).

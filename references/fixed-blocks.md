@@ -1,18 +1,18 @@
-# 正文与 FAQ 之间的三个纯图版块
+# Three image-only blocks before the final FAQ
 
-无需 HTML 模板。英文产品正文和固定公司简介结束后，严格按以下顺序插入三个版块；随后输出六个 FAQ，FAQ 必须位于整份详情最底部。标题取原始文件名去掉扩展名，大小写和空格保持不变：
+No legacy HTML template is required. After the English product body and fixed company profile, insert the following three blocks in this exact order, then the six FAQs at the bottom of the complete detail. Derive headings from original filenames without extensions, preserving capitalization and spaces:
 
-| 顺序 | H2 标题 | 随包文件（相对技能目录） | WebP 文件名 |
-|---|---|---|---|
+| Order | H2 heading | Bundled file, relative to the skill directory | WebP filename |
+| --- | --- | --- | --- |
 | 1 | Factory Photo | `assets/fixed-blocks/Factory Photo.png` | factory-photo.webp |
 | 2 | MiBA Logo Options | `assets/fixed-blocks/MiBA Logo Options.png` | miba-logo-options.webp |
 | 3 | MiBA Accessory Options | `assets/fixed-blocks/MiBA Accessory Options.png` | miba-accessory-options.webp |
 
-直接读取技能目录下 `assets/fixed-blocks/` 中的同名文件，不查找用户本机其他目录、不要求重新上传。包内文件缺失则报告技能素材缺失。仅转 WebP 和合理压缩，保留完整画面、原始像素尺寸、比例和图中文字；不改品牌、不裁剪、不用 AI 重绘。这三张指定素材不受“新详情图必须 AI 原创”限制，不代表所有文案都必须带 MiBA 品牌。
+Read the named files directly from the skill's `assets/fixed-blocks/` directory. Do not search unrelated local directories or request another upload. If a file is absent, report a missing skill asset. Only convert to WebP and compress reasonably, preserving the full image, original pixel dimensions, aspect ratio, and text. Do not change brands, crop, or regenerate with AI. These assets are exempt from the new-detail-image generation requirement; their presence does not require a MiBA mention in every sentence.
 
-每版块仅 `section > h2 + img`，不加段落、图注、列表或按钮。alt 使用标题，width/height 使用实际尺寸，loading=lazy，图片在最大 1400px 的完整详情容器内响应式全宽且保持比例。压缩后文件名不用于显示标题。
+Each block contains only `section > h2 + img`: no paragraphs, captions, lists, or buttons. Use the heading as alt text, actual dimensions as width/height, and `loading=lazy`. Images span the responsive detail container, whose maximum width is 1400px, without changing their proportions. Do not derive displayed headings from compressed filenames.
 
-每行 image-plan 的 images 数组在产品图后追加以下三个对象。生成实际清单时，将 `<skill-dir>` 替换为当前技能目录的绝对路径，不按用户桌面路径或任务工作目录查找：
+Append these three objects after the product images in each product's image-plan array. Replace `<skill-dir>` with the current skill directory's absolute path, not a desktop path or the task working directory:
 
 ```json
 [
@@ -22,8 +22,8 @@
 ]
 ```
 
-prepare_images.py 记录源文件名、SHA-256、标题和输出尺寸。按原流程上传 WebP；三个链接仅用于 content 的固定版块，不写入 CSV images；thumb/scenario_image 仍用商品图/原创应用图。compose_content.py 根据图片和上传清单，将三个固定版块插入正文与 FAQ 之间。
+`prepare_images.py` records source filenames, SHA-256 hashes, headings, and output dimensions. Upload the WebP files normally. Their URLs belong only in fixed blocks in `content`, not CSV `images`; `thumb` and `scenario_image` still use the product cover and generated application image. `compose_content.py` uses image/upload manifests to place the blocks before the final FAQ.
 
-固定图含文字，默认质量 82，不为达到 100 KB 降低质量；较大文件记录清晰度例外。逐图核对原图与转换图。HTML 图片 src 必须为上传后的直链，不写本机路径。
+Fixed images contain text. Keep the default quality 82 rather than reducing it to meet 100 KB; document a readability exception for larger files. Compare every converted image with its original. HTML `src` values must use uploaded Direct links, not local paths.
 
-固定版块外层左右 padding 为 0，上下保留适当间距；H2 标题统一加粗（700）居中。
+Set outer left/right padding to zero, retain suitable vertical spacing, and use bold (700), centered H2 headings.

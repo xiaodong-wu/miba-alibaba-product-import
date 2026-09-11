@@ -1,106 +1,108 @@
 ---
 name: miba-alibaba-product-import
-description: 将 Alibaba 商品 CSV 转为英文商品导入数据，重新生成封面和至少四张组图，生成丰富的模块化英文详情并在正文与最底部FAQ之间插入固定公司简介及三个标题加图片版块，按指定 Google 产品优化规范创作应用场景图、转换 WebP、上传 ImgBB 并校验。用于 MiBA 网站含 link 的商品迁移表。
+description: Convert Alibaba product CSVs into English product imports for MiBA. Generate a new cover, at least four gallery images, detailed product content, application imagery, a fixed company profile and three supplied image blocks before six final FAQs. Convert images to WebP, upload to ImgBB, and validate the completed CSV. Use for MiBA import sheets containing a link column.
 ---
 
 # Miba Alibaba Product Import
 
-流程：Alibaba 链接与用户 CSV → 提取商品事实和图库 → 重新生成封面、组图及详情场景图 → 编写英文详情 → 转换 WebP 并上传 ImgBB → 拼接公司简介、三个固定图片区及最底部 FAQ → 回填 CSV → 校验交付。
+Workflow: user CSV and Alibaba links → verified product facts and reference images → newly generated cover, gallery, detail and application images → English product copy → WebP conversion and ImgBB upload → company profile, three fixed image blocks and final FAQs → completed CSV → validation and delivery.
 
-## 必读规则与优先级
+## Required references and precedence
 
-直接读取并执行随包 [Google 产品优化规范](references/google-product-seo-requirements.md)。CSV 字段和交付要求见 [字段与交付规则](references/schema-and-workflow.md)。
+Read and apply the bundled [Google product optimization requirements](references/google-product-seo-requirements.md). Read [Fields and workflow](references/schema-and-workflow.md) for the CSV and delivery contract.
 
-用户当前要求优先，严格执行随包产品优化规范中的内容、SEO、图片和页面要求。目标网站品牌使用 MiBA，不在生成内容中出现其他站点的品牌、公司名称或无关产品示例。产品参数必须来自当前商品的真实资料，不得将来源供应商的资质、认证或公司能力直接归属于 MiBA。固定公司简介保留用户提供的原文。
+The user's current instructions take precedence. Apply the bundled content, SEO, image and page requirements. Use MiBA as the target website brand; do not introduce other websites' brands, company names or unrelated product examples into generated content. Product specifications must come from verified information about the current product. Do not attribute the source supplier's qualifications, certifications or company capabilities to MiBA. Preserve the user-supplied company profile verbatim.
 
-无需旧 HTML 模板。最终详情顺序固定为：英文产品正文 → Company Profile → Factory Photo → MiBA Logo Options → MiBA Accessory Options → 六个 FAQ。
+No legacy HTML template is required. The final order is: English product body → Company Profile → Factory Photo → MiBA Logo Options → MiBA Accessory Options → six FAQs.
 
-生成前读取 [产品保真与 MiBA 排版参考](references/identity-and-miba-layout.md)。原 Alibaba 图片用于核对产品结构，画面设计独立创作；排版以用户确认的最新要求为准。SEO 标题与描述独立编写，不强制等于商品标题与简介。
+Before generation, read [Product fidelity and MiBA layout](references/identity-and-miba-layout.md). Use original Alibaba images to verify product structure while designing independent compositions. Follow the user's latest layout requirements. Write SEO titles and descriptions independently; they need not equal the product title and summary.
 
-## 详情排版要求
+## Detail layout requirements
 
-以下规则优先于排版参考中的示例：
-- 所有版块外层左右 padding 为 0（包括概览、正文、公司简介、三个固定图片区和 FAQ），手机端同样为 0。上下保留合适间距，建议桌面 28–40px、手机 20–28px；表格单元格等内部必要间距可保留。
-- 同一段文字保持在同一个连续文本块中，不拆成左右两栏，不使用 CSS 多栏分流。图文可左右排列，不同主题的独立版块可并排；每段正文须完整留在所属版块内，窄屏自然堆叠。
-- 每个版块的标题统一用 `<h2>`，`font-weight:700;text-align:center`。不要用 H3、普通 div 或行内粗体冒充版块标题；段内标签和 FAQ 问题不属于版块标题。
+These rules override conflicting examples in the layout references:
 
-## 执行
+- Set every section's outer left and right padding to zero, including the overview, body, company profile, fixed images and FAQ, on desktop and mobile. Retain suitable vertical spacing: approximately 28–40px on desktop and 20–28px on mobile. Internal spacing such as table-cell padding is allowed.
+- Keep each paragraph in one continuous text block. Do not split it into left/right columns or use CSS multicolumn flow. Images may sit beside complete text blocks, and independent topics may appear side by side. Stack them naturally on narrow screens.
+- Use `<h2>` with `font-weight:700;text-align:center` for section headings. Do not substitute H3, plain divs or inline bold text. Inline labels and individual FAQ questions are not section headings.
 
-### 1. 检查输入与固定图片
+## Workflow
 
-保留输入文件，默认输出 `<input-stem>_completed.csv`。逐行检查 link 和 IMGBB_API_KEY；保留行顺序、原字段值和未知列。密钥仅由上传脚本读取，不打印整行或整表，不把含密钥 CSV 放入日志或 Git。
+### 1. Check the input and fixed assets
 
-使用用户上传或指定的 CSV，复制到任务输出目录后处理。未提供 CSV 时，请用户上传含 ImgBB Key 的导入模板。字段结构参考随包 [空白字段模板](assets/content_import_template.csv)。已有表中的 template 字段原样保留。
-三个固定图片版块调用以下随包文件：
+Preserve the source CSV and default to `<input-stem>_completed.csv`. Check `link` and `IMGBB_API_KEY` for each row. Preserve row order, protected source values and unknown columns. Only the upload script reads keys; do not print complete rows or tables, log secrets, or commit CSVs containing keys.
 
-| 顺序 | 版块标题 | 随包图片 |
+Copy the user's uploaded or specified CSV into the task output directory before processing. If no CSV was supplied, ask for an import sheet containing an ImgBB key. The [blank header template](assets/content_import_template.csv) defines the field structure. Preserve an existing `template` column without using its content.
+
+Use these bundled files for the fixed image blocks:
+
+| Order | Section heading | Bundled image |
 | --- | --- | --- |
 | 1 | Factory Photo | `assets/fixed-blocks/Factory Photo.png` |
 | 2 | MiBA Logo Options | `assets/fixed-blocks/MiBA Logo Options.png` |
 | 3 | MiBA Accessory Options | `assets/fixed-blocks/MiBA Accessory Options.png` |
 
-包内文件缺失时报告技能素材缺失，不能用 AI 替代指定图片。
+If a bundled file is missing, report the missing skill asset. Do not replace it with an AI-generated image.
 
-### 2. 完整提取资料与搜索意图
+### 2. Extract source information and search intent
 
-BrowserAct 浏览器偏好：先检查其可连接的现有浏览器与标签页，优先复用用户已打开的普通浏览器及登录状态；访问新商品时在该浏览器中打开普通标签页，不主动使用无痕/隐私模式或隔离的临时浏览上下文。不覆盖或关闭用户原有标签页。需要人工验证时保持可见窗口，用户完成后继续同一标签页。没有可复用的浏览器或无法直接连接时，可按用户授权打开新的可见普通窗口，不擅自关闭或重启用户正在使用的 Chrome；若无法连接已有浏览器或无法保留普通会话，明确说明实际限制，不把新建隔离会话称为复用。用户已要求不使用 Codex 内置浏览器，不自动回退至内置浏览器。
+BrowserAct preference: inspect connectable existing browsers and tabs first. Prefer the user's ordinary browser and existing login session. Open new product links in ordinary tabs there; do not proactively use incognito/private mode or isolated temporary contexts. Do not overwrite or close the user's existing tabs. Keep a visible window for manual verification and continue in the same tab afterward. If no browser can be reused or connected directly, a new visible ordinary window may be opened within the user's authorization. Do not close or restart their active Chrome without authorization. State any session-reuse limitation accurately; do not describe an isolated session as reused. The user has requested that the Codex in-app browser not be used, so do not automatically fall back to it.
 
-先读 [来源覆盖检查](references/source-coverage.md)。尽可能完整使用当前商品链接内可访问、可验证且与采购决策有关的资料，不能只读标题和首屏就生成简略详情。展开参数与详情、滚动加载全部相关图片、检查规格选项与包装交付等信息；逐项记录已提取、已使用、未使用的理由和未能访问的区域。
+Read [Source coverage](references/source-coverage.md). Use as much accessible, verifiable information relevant to buying decisions as the current product link provides. Do not write a short generic description from only the title and first screen. Expand specifications and descriptions, scroll to load relevant images, and inspect variants, packing and delivery information. Record what was extracted, where it was used, why it was excluded, and which areas could not be accessed.
 
-用可用浏览器读取当前 Alibaba 页面全部相关区域及图库，提取标题、参数、材质/配方、结构、用途、包装和认证等实际可验证信息。保留数值和单位。规格属性冲突优先规格表；份量/营养信息优先清晰标签；仍有冲突则记录，不猜测。
+Read the current Alibaba page and gallery with an available browser. Extract verifiable titles, specifications, materials/formulas, structure, uses, packaging and certification information. Preserve numbers and units. Prefer specification tables for conflicting product attributes and legible labels for serving/nutrition information. Record unresolved conflicts instead of guessing.
 
-每行写本地 evidence JSON：源 URL、访问时间、事实及对应可见原文/图像来源、资料覆盖清单、各项事实对应的详情小节或未采用理由、1 个主关键词、2–5 个长尾词、缺失信息、冲突。禁止复用其他商品的事实。页面不可访问时跳过并记录原因，不猜测缺失参数。
+Write one local evidence JSON per row: source URL, access time, facts with visible text/image references, coverage inventory, each fact's destination section or exclusion reason, one primary keyword, two to five long-tail keywords, missing information and conflicts. Never reuse another product's facts. If the page cannot be accessed, skip the row and record why; do not invent missing specifications.
 
-### 3. 编写新增详情
+### 3. Write the product detail
 
-读取[固定公司简介规则](references/company-profile.md)。产品正文之后固定插入用户提供的公司简介，逐字保留文案，仅重新排版；其后依次是三个指定图片区，FAQ 在最底部。固定简介由拼接器从 assets/company-profile.html 读取，不在生成正文中重复编写。公司简介中的公司能力和商业条款来自用户原文，不自动作为当前商品的专属参数、配置或交付承诺。
+Read [Fixed company profile](references/company-profile.md). Insert the user-supplied company copy verbatim after the product body, followed by the three specified image blocks and the final FAQ. The composer reads `assets/company-profile.html`; do not duplicate this text in the authored product body. Its company capabilities and commercial terms come from supplied copy and must not automatically become product-specific specifications, configurations or delivery promises.
 
-前台文案面向购买者，直接介绍有依据的产品结构、功能、用途和选择。禁止把 evidence、审核意见、AI制作过程或“供应商声称但未核验”的清单作为产品卖点/图注发布。无法支持的协议、认证、保护功能、磁铁等级等不以确定语气改写；省略该卖点并在内部报告说明原因。不能通过删除免责声明把未证实信息变成承诺。适配型号、电源要求、配件是否包含等影响购买的信息仍需保留，写成简洁的产品条件或配置说明。交付前单独检查正文、表格、图注、FAQ、SEO及alt，确保它们都是客户需要的信息。
+Write for buyers: explain supported structure, functions, uses and choices directly. Do not publish evidence records, review comments, AI production methods or lists of unverified supplier claims as selling points or captions. Omit unsupported protocols, certifications, protection features and magnet grades, recording the reason internally. Removing a disclaimer does not make an unsupported claim valid. Retain purchasing conditions such as compatible models, power requirements and included accessories as concise product or configuration information. Review the body, tables, captions, FAQs, SEO fields and alt text separately for customer relevance.
 
-先读 [内容与排版规则](references/content-layout.md)，再读取用户排版参考 `C:\Users\wulic\Desktop\产品详情内容排版.txt`；本机不可读时使用 [随包排版参考](references/product-detail-layout-source.txt)，说明使用快照。参考图为 S1–S9 结构示意，按商品事实选择双栏图文、交错图文和多列卡片，不是必须机械填满的九个模板。
+Read [Content and layout](references/content-layout.md), then the user's supplied layout reference if accessible; otherwise use the [bundled layout snapshot](references/product-detail-layout-source.txt) and state that a snapshot was used. Its S1–S9 wireframes are structural examples. Select side-by-side, alternating and multicolumn arrangements according to the evidence; do not mechanically fill all nine patterns.
 
-详情应充分展开已核实的结构、功能、操作、适配、选型、应用、包装和定制信息，以“事实 → 采购意义 → 使用条件”组织正文。不能仅用简短概览、参数表和大量待确认提示构成整页，也不能靠同义改写、重复 FAQ、无依据的卖点或虚构案例凑篇幅。先制作 evidence.content_plan，再写正文；来源差异、核验过程、未证实卖点及其未采用理由保留在 evidence/review，不直接写成客户正文。无法可靠解决的参数不作为前台确定规格；影响购买的限制改成简洁、具体的选型说明。
+Develop verified structure, functions, operation, compatibility, selection, applications, packaging and customization using fact → purchasing significance → use conditions. A short overview, a table and repeated requests to confirm details do not constitute a complete page. Do not inflate length with paraphrases, repeated FAQs, unsupported benefits or invented cases. Build `evidence.content_plan` before writing. Keep source discrepancies, verification steps, unsupported claims and exclusion reasons in evidence/review. Do not publish unresolved values as definite specifications; express material limitations as concise selection guidance.
 
-逐项落实 Google 文档的关键词、元数据、图片、内容结构、页面体验及验收要求。用独立英文组织采购商需要的信息，不逐句翻译/复制 Alibaba 或旧模板文案。
+Apply the optimization document's keyword, metadata, image, content, page-experience and acceptance requirements. Write independent English copy rather than translating Alibaba or legacy template text sentence by sentence.
 
-新增区必须先概览，再按资料组织介绍、参数表、优势、应用、案例/模拟效果、包装交付、认证、工厂能力、公司优势及六个采购 FAQ。推荐栏目不是虚构事实的理由；没有依据的认证/案例不展示，没有交期等信息时说明需确认。公司名及 OEM/ODM 能力仅在用户提供或当前来源可验证时使用，不推断属于目标公司。
+Begin with an overview, then organize supported introductions, specifications, benefits, applications, actual cases or illustrative scenes, packaging/delivery, certifications, factory capabilities, company advantages and six purchasing FAQs. Suggested sections do not justify invented facts. Omit unsupported certifications or cases; flag missing lead times for confirmation. Use company names and OEM/ODM capabilities only when supplied by the user or verifiable in the current source, without assuming they belong to the target company.
 
-页面主要 H1 总计只能有一个。详情版块标题始终使用加粗居中的 H2；产品页的唯一 H1 由外层产品标题提供，独立预览在详情容器外提供 H1。未知外层情况记为部署待验。产品详情包含六个采购 FAQ，顺序固定为：英文产品正文 → 固定公司简介 → Factory Photo → MiBA Logo Options → MiBA Accessory Options → 六个 FAQ。FAQ 是整份详情的最后一个内容版块。
+The full product page must have exactly one main H1, supplied by the outer product title. A standalone preview places its H1 outside the detail container. Mark unknown CMS heading behavior as pending deployment verification. Use centered bold H2 headings throughout the detail. Keep the six FAQs as the last content section, after the company profile and all three fixed image blocks.
 
-完整产品详情（包含三个固定版块和最底部 FAQ）最大宽度 **1400px**，宽屏居中、窄屏宽度 100%，不能固定为 1400px。由 compose_content.py 添加统一外层容器。内层图文宽度不超过容器；图片 max-width:100%、height:auto，表格在自身容器内横向滚动，禁止 100vw、超宽 min-width 或绝对定位撑出容器。新增区采用 `.xb_import_v2` 命名空间，所有 CSS 选择器限定于此，移动端表格可横向滚动，图片提供 width/height 和响应式样式。只输出 HTML 片段，不引入 html/head/body、外部字体、全局 CSS、可执行 JavaScript 或 meta keywords。SEO 元数据填 CSV，不塞进详情 HTML。结构化数据属于站点集成，不能虚构评分/价格/库存。
+The complete detail, including fixed blocks and FAQ, has a responsive maximum width of **1400px**, centered on wide screens and 100% width on narrow screens. Do not use a fixed 1400px width. `compose_content.py` adds the shared outer container. Keep internal content within it, images at `max-width:100%;height:auto`, and table overflow inside the table's own container. Avoid `100vw`, oversized minimum widths and absolute positioning that expands the page. Namespace authored content and CSS under `.xb_import_v2`. Set explicit image width/height and responsive styles. Output an HTML fragment only: no html/head/body wrappers, external fonts, global CSS, executable JavaScript or meta keywords. Put SEO metadata in CSV fields, not the detail HTML. Structured data is a site-integration concern; never fabricate ratings, prices or stock.
 
-将六个 FAQ 放入单独的 `<section class="xb_import_v2 miba_faq_section" style="padding:26px 0">` 容器，内部保留六个 `xb_faq_item`；该 FAQ 容器置于待拼接详情末尾，之后仅可有外层闭合标签。拼接器将其移至三个固定版块之后；FAQ 不得混在产品正文中。
+Place the six `xb_faq_item` elements in a separate `<section class="xb_import_v2 miba_faq_section" style="padding:26px 0">` at the end of the authored detail. Only closing wrapper tags may follow it. The composer moves this section after the fixed blocks. Do not mix the FAQ into the product body.
 
-将英文详情写入 `<file_name>.detail.html`，上传完成后通过 `scripts/compose_content.py` 追加三个固定图片版块，并把 FAQ 放到三个版块之后，生成最终 content。固定版块每个仅有一个 H2 标题和一张图片，不添加介绍、说明、按钮或额外内容。
+Save the authored fragment as `<file_name>.detail.html`. After all uploads succeed, run `scripts/compose_content.py` to insert the company profile and fixed images, place the FAQ last, and produce final `content`. Each fixed image block contains exactly one H2 and one image, with no extra introduction, caption, button or other content.
 
-### 4. 图片创作与处理
+### 4. Generate and prepare images
 
-最新图片参考规则：Alibaba 原组图和原详情图是产品身份、功能和用途的参考，必须作为 imagegen 输入，但不是照搬画面设计的模板。锁定产品外形、比例、部件、材质、接口及设备接触关系；重新设计整体构图、主体位置与尺度、背景场景、道具、光线、配色和图文层级。不能仅改背景颜色、替换文字或轻微挪动元素；不复制原图的特殊光效、巨大数字背景、箭头组合及缩略图拼版。可保留有依据的产品观察角度，不能为降低相似度虚构未见部件。生成前分别记录 identity_locks 和 design_changes；验收分开判断产品准确性与画面独立性。用户所说“相似度80%”是对上一版过度相似的批评，不是目标比例；不编造量化相似度或承诺固定百分比。未证实宣传不照搬。
+Original Alibaba gallery and detail images must be imagegen inputs for product identity, function and use, not templates for copying the composition. Lock the observed silhouette, proportions, parts, materials, ports and device contact. Substantially redesign framing, subject placement/scale, setting, props, lighting, palette and information hierarchy. Merely recoloring the background, replacing text or moving a few elements is insufficient. Do not copy distinctive effects, giant numeral backgrounds, arrow combinations or thumbnail grids. Retain supported viewing angles without inventing unseen parts to reduce resemblance. Record `identity_locks` and `design_changes` separately before generation; assess fidelity and visual independence separately afterward. The user's earlier “80% similarity” comment criticized excessive resemblance; it is not a target or a measured metric. Do not invent similarity scores or promise fixed percentages. Do not reproduce unsupported promotional claims.
 
-先读 [图片制作规则](references/image-workflow.md)。Alibaba 图库仅用作实物与事实参考。产品封面、产品组图、详情介绍图及应用图全部调用 imagegen 重新生成，不直接把来源文件作为生成结果；使用 imagegen 进行有针对性的参考图编辑，保留产品本体，同时对整体视觉设计作实质重构。每个商品生成 1 张独立 cover 和至少 4 张独立 gallery，即 CSV images 至少 5 张；不把封面、详情图、场景图或固定素材算入四张组图。组图应分别展示有依据的不同角度、结构、状态或颜色，不用同图改名或轻微变化凑数。三个固定图片是明确例外：直接使用技能包内的同名 PNG 转 WebP，不重新生成、改字、裁切或变更图片内容。
+Read [Image workflow](references/image-workflow.md). Generate every product cover, gallery image, detail illustration and application scene with imagegen using inspected source references. Do not pass source files off as generated results. Use targeted reference-image generation that preserves the product while substantially redesigning the surrounding composition. Generate one distinct cover and at least four distinct gallery images per product: at least five entries in CSV `images`. The cover, detail images, scene and fixed assets do not count toward the four gallery images. Show supported differences in angle, structure, state or color; do not pad the count with renamed duplicates or trivial variations. The three supplied fixed images are the exception: convert their bundled PNGs to WebP without regeneration, text changes, cropping or content changes.
 
-图的产品身份和功能重点参考对应 Alibaba 原图，整体画面与信息组织独立设计；产品结构、连接、比例及可核实标签保持准确。场景示意需要区分实拍时使用简短自然的图注，如 `Desk setup illustration.`；不能冒充真实客户案例或工厂现场。图片生成方法、供应商视频帧来源、手部比例核验等制作说明只写入内部记录，不放入商品详情。
+Preserve verified product geometry, connections, proportions and labels. When an illustrative scene must be distinguished from photography, use a brief natural caption such as `Desk setup illustration.` Do not imply a real customer project or factory visit. Keep image-generation methods, source-frame provenance and proportion checks in internal records, not product copy.
 
-品牌展示统一使用 MiBA，不沿用来源商家或示例品牌；不要求每张图片都加 Logo，也不因网站品牌为 MiBA 就虚构实物上的印刷标识。需要添加品牌标识时使用用户提供的 MiBA 素材并按其要求用 imagegen 处理，检查其他标签文字和数字未变。真实产品的形状、接口、部件数量、比例和可核实标签必须准确，不能为凑四张组图发明未观察到的背面结构或附件。逐张视觉核对后准备角色清单，运行 `scripts/prepare_images.py`：gallery/cover 为 800×800；scenario 宽度至少 1200；detail 按版面确定。WebP 从质量 82、method 6 开始压缩，保真优先；超体积记录理由并复核。
+Use MiBA for displayed branding, never a supplier/example brand. A logo is not required on every image, and the website brand does not establish a physical logo imprint. Use user-supplied MiBA assets when a brand mark is requested, process them with imagegen as instructed, and verify other labels and numbers remain accurate. Do not invent unseen rear structures or accessories to complete the gallery count. After reviewing each image, prepare the role manifest and run `scripts/prepare_images.py`: cover/gallery are 800×800, scenario width is at least 1200px, and detail dimensions follow the layout. Start WebP compression at quality 82 and method 6. Preserve fidelity; review and document size exceptions.
 
-### 5. 上传与回填
+### 5. Upload and populate the CSV
 
-使用每行 CSV 中的 IMGBB_API_KEY，调用随包上传脚本；不得改用命令行明文密钥。只有该行全部所需图片上传成功后才回填图片字段。上传会对网络/429/5xx 有界重试；仍失败则记录，禁止无限重试。保留部分成功清单，重新尝试前检查它，脚本自身不提供断点续传。
+Use the bundled uploader with the `IMGBB_API_KEY` from each CSV row; never pass plaintext keys on the command line. Populate image fields only after all images required for that row upload successfully. The uploader retries network, 429 and 5xx errors a bounded number of times. Record persistent failures instead of retrying indefinitely. Retain partial success manifests and inspect them before retrying; the script does not provide resume support.
 
-thumb 用产品封面；scenario_image 用新生成应用图。**CSV 的 images 仅写产品封面和产品组图**（cover/gallery），按新生成清单的展示顺序排列：封面第一，至少四张组图随后，逐行 `<url>|<English alt>`。详情介绍图、应用场景图、Factory Photo、MiBA Logo Options、MiBA Accessory Options 都不写入 images；详情图片仅放入 content，场景图还写入 scenario_image。不要为了满足旧校验而混入详情图。
+Set `thumb` to the cover and `scenario_image` to the new application image. **CSV `images` contains only cover/gallery assets**, in manifest display order: cover first, then at least four gallery images, one `<url>|<English alt>` entry per line. Exclude detail images, scenes and all fixed assets. Detail images appear only in `content`; the scene also populates `scenario_image`. Do not add detail images to satisfy an obsolete validator.
 
-`pro_fields`：4–8 条已验证卖点，各占一行，无项目符号、点、横线或编号。
+`pro_fields` contains four to eight verified selling points, one per line, without leading bullets, dots, dashes or numbering.
 
-所有图片仍要转换 WebP、上传 ImgBB 并在本地图片清单和上传清单中保留。只有 data.url 的 `https://i.ibb.co/...webp` 可回填。content 的图片链接从上传清单按 detail/scenario/supplied_static 角色读取，不要求出现在 CSV images。三个固定版块的标题、图片和顺序保持不变。
+Convert and upload every image role and retain all files in local and upload manifests. Populate fields only with the returned `data.url` Direct link in the form `https://i.ibb.co/...webp`. Resolve `content` images from uploaded detail/scenario/supplied_static records; they need not appear in CSV `images`. Preserve the exact fixed headings, assets and order.
 
-### 6. 校验与交付
+### 6. Validate and deliver
 
-按 [字段与交付规则](references/schema-and-workflow.md) 记录行状态和人工复核结果，运行：
+Record row status and completed manual checks using [Fields and workflow](references/schema-and-workflow.md), then run:
 
 ```text
 python scripts/validate_output.py input.csv input_completed.csv --images-dir images --report validation.json --review review.json
 ```
 
-修复成功行的全部错误。对照来源覆盖清单查漏补缺，核对每个已访问且有价值的参数、说明和图片信息已合理使用；无法访问的区域如实列出，不宣称已完整采集。视觉复核英文详情、三个固定图片版块及最底部FAQ的组合在手机（如 390px）和宽桌面（如 1920px）下的效果，确认内容宽度不超过 1400px 且没有页面横向溢出，核对图片中的商品、标签、结构、模拟图说明以及事实来源。脚本不证明 SEO 收录、图片原创性或事实真实性。
+Fix all errors for successful rows. Reconcile the source coverage inventory so useful accessible specifications, explanations and image information are accounted for. List inaccessible areas honestly rather than claiming complete extraction. Visually inspect the combined English detail, company profile, fixed images and final FAQ at mobile (for example, 390px) and wide desktop (1920px) widths. Confirm the 1400px maximum, no page-level horizontal overflow, accurate products and labels, sound geometry, appropriate scene captions and supporting source evidence. The script does not establish search indexing, image originality or factual truth.
 
-交付完成版 CSV、本地 WebP、上传清单、证据记录及校验报告；报告成功/跳过/阻塞行数。存在跳过或阻塞时明确为部分完成。原 CSV 密钥列按原要求保留，因此含密钥的完成表仅交还用户，不用作公开示例。站点 canonical、301、站内链接、Sitemap、robots、hreflang、HTTP 图片可访问性及 CWV 等没有部署环境时列为待验，不能声称通过或擅自发布。
+Deliver the completed CSV, local WebP files, upload manifests, evidence and validation report. State the number of successful, skipped and blocked rows; label any skipped/blocked result as partial. Preserve the source key column, so return completed CSVs containing keys only to the user, never as public examples. Without a deployment environment, mark canonical URLs, redirects, internal links, Sitemap, robots, hreflang, image HTTP access and Core Web Vitals as unverified. Do not claim they passed or publish the site without authorization.

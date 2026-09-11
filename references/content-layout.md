@@ -1,54 +1,59 @@
+# Detailed content and modular layout
+
 Current override: Read [Product identity and MiBA layout](identity-and-miba-layout.md) first. Its fidelity and primary layout rules take precedence over conflicting older guidance below.
 
-# 丰富详情与模块排版
+## Reference and scope
 
-## 参考与适用范围
-每次创作先读取本机 `C:\Users\wulic\Desktop\产品详情内容排版.txt`；无法读取时用 [原文快照](product-detail-layout-source.txt)，并告知使用快照。该文件只有 S1–S9 线框，没有产品文案或强制字段。以下是面向商品页的布局解释与建议，不把它误称为参考文件中的明文规定。
+Before writing, read the user's supplied product-detail layout reference if accessible. Otherwise use the [bundled snapshot](product-detail-layout-source.txt) and state that a snapshot was used. It contains S1–S9 wireframes, not product copy or mandatory fields. The mappings below are product-page interpretations and suggestions, not explicit requirements quoted from those wireframes.
 
-## 内容先于版式
-先在 evidence.content_plan 中为每个模块列出：买家问题、核实事实/图像出处、英文展开要点、布局类型、原创图片用途。逐项映射来源资料，不能只摘标题、几个卖点和规格表。
-- 概览回答是什么、为谁使用、已证实的关键区别。
-- 结构/材料/部件解释事实如何影响操作或选择，展示真实连接和配置；不能凭材料推导未测试的耐用性。
-- 功能/优势说明功能、用途、条件；避免“高品质”“更高效”等没有依据的空泛断言。
-- 操作/适配/选型说明可核实的使用方式、变体区别、输入条件、配件包含关系和限制。不能编造安全或技术操作步骤。
-- 应用用独立场景图与正文解释场景和可见优势，不只放一张通用桌面图和标题。
-- 参数保留完整单位、重要差异与配置对应关系；重复数值可集中到表内。
-- 包装、定制、交付与质量内容使用来源事实，明确主体和条件。公司能力不能自动归属用户品牌。
-- 六个 FAQ 补充真实采购疑问，避免把前文整段再复制六次。
-没有固定字数要求。以信息覆盖和决策价值判断是否丰富；资料稀少时如实说明缺口，不能为了填版面发明认证、客户、使用效果或参数。冲突、制作过程和核验结论保留在 evidence/review；前台省略未证实卖点及无法可靠解决的参数。对明确事实直接自然描述，影响购买的限制写成简洁选型说明。
+## Content before layout
 
-## 线框到内容的映射
-| 参考 | 布局含义 | 可选内容 |
+Build `evidence.content_plan` first. For every module, record the buyer's question, verified facts/image sources, points to develop in English, layout type, and purpose of the newly generated imagery. Map source information comprehensively rather than extracting only a title, a few selling points, and a table.
+
+- The overview explains what the product is, who it serves, and its supported distinctions.
+- Structure/material/component sections explain how facts affect use or selection, showing real connections and configurations. Do not infer untested durability from material alone.
+- Function/benefit sections explain capabilities, uses, and conditions. Avoid unsupported claims such as “high quality” or “more efficient.”
+- Operation/compatibility/selection sections explain verified use, variant differences, input requirements, included accessories, and limitations. Do not invent safety or technical procedures.
+- Applications combine independent scene images with explanations of the setting and visible advantages, rather than only a generic desktop image and heading.
+- Specifications preserve complete units, meaningful differences, and configuration relationships. Repeated values may be consolidated in a table.
+- Packaging, customization, delivery, and quality sections use source facts with explicit subjects and conditions. Supplier capabilities do not automatically belong to the user's brand.
+- Six FAQs address additional purchasing questions instead of repeating entire preceding paragraphs.
+
+There is no fixed word count. Judge completeness by source coverage and decision value. Record limited source information honestly; do not invent certifications, customers, outcomes, or specifications to fill space. Keep conflicts, production methods, and verification conclusions in evidence/review. Omit unsupported selling points and unresolved values from customer-facing specifications. State clear facts naturally and express purchasing limitations as concise selection guidance.
+
+## Mapping wireframes to content
+
+| Reference | Layout meaning | Optional content |
 | --- | --- | --- |
-| S1 | 两个并排大区块 | 产品概览：原创主视觉 + 价值说明/关键事实 |
-| S2 | 四列两行卡片 | 有依据的功能、部件或选型要点，每卡标题和有信息量的短文 |
-| S3 | 两行交错双栏 | 结构、操作状态或技术细节，图文左右交替 |
-| S4 | 三列两行卡片 | 应用/优势组合；事实不足时减少卡片 |
-| S5 | 双栏大区块 | 场景图 + 使用说明/条件，或参数与配置解释 |
-| S6 | 三列内容后接四列内容 | 主应用/配置与补充部件；按实际资料调整数量 |
-| S7 | 多组卡片组合 | 定制、包装或质检流程；避免过密或留无意义空格 |
-| S8 | 纵向全宽条目 | 参数、采购说明或六个 FAQ；FAQ 数量仍为六个 |
-| S9 | 全宽、双栏与局部图文混排 | 综合长页的节奏和内容分组，不强制照搬每个空框 |
+| S1 | Two large side-by-side blocks | Product overview: original main visual plus value statement/key facts. |
+| S2 | Four columns by two rows of cards | Supported functions, components, or selection points, each with a heading and informative short copy. |
+| S3 | Two alternating two-column rows | Structure, operating states, or technical details with alternating text/image placement. |
+| S4 | Three columns by two rows of cards | Applications and benefits; reduce the count when evidence is limited. |
+| S5 | Two large columns | Scene plus usage conditions, or specifications and configuration explanations. |
+| S6 | Three-column content followed by four-column content | Main applications/configurations and supplementary components; adapt counts to the facts. |
+| S7 | Multiple card groups | Customization, packaging, or quality-control processes; avoid crowding and meaningless empty slots. |
+| S8 | Vertical full-width entries | Specifications, buying guidance, or six FAQs; the FAQ count remains six. |
+| S9 | Mixed full-width, two-column, and localized text/image blocks | Rhythm and grouping for a long page; do not mechanically reproduce every empty box. |
 
-默认从这些线框组合一页：双栏概览 → 关键功能卡片 → 交错细节 → 参数/适配 → 多场景图文 → 包装定制/质量 → 三个固定纯图版块 → 六个 FAQ（最底部）。按事实合并或省略无依据模块，通常同时采用双栏、卡片、全宽三类布局，避免整页只有一段文字接一张大图反复堆叠。不是必须使用全部九种布局，也不强制四列填八个卖点。
+Subject to the primary MiBA layout reference, possible combinations include: two-column overview → key features → alternating details → specifications/compatibility → applications → packaging/customization/quality → company profile → three fixed image blocks → six final FAQs. Merge or omit unsupported modules. Where appropriate, combine two-column, card, and full-width layouts rather than repeatedly stacking a paragraph and image. Using all nine wireframes or filling eight feature cards is not required.
 
-## 响应式与视觉要求
-- 统一最大宽度 1400px，宽屏居中，移动端宽度 100%；所有选择器限定在 .xb_import_v2。
-- 双栏图文建议 1:1 或 5:6，交错模块在移动端采用合理阅读顺序；不要依赖 CSS 视觉顺序而破坏语义顺序。
-- 桌面卡片按内容用 3 或 4 列，平板降为 2 列，手机通常 1 列；短小规格卡可 2 列，但不能挤压文字。
-- 网格采用 minmax(0,1fr)，明确图片比例与 width/height，统一间距、字体层级和克制的强调色；文字内容不烘焙进图片。
-- 图文内容的角色必须分开：CSV cover/gallery 不重复用于 content；详情主视觉、细节和应用所需图片另行生成。根据内容需要生成足够详情图片，不设只有一两张的上限；不要为填卡片强迫每卡配图。
-- 生成图中产品结构和实际使用逻辑优先。独立场景可用简短图注如 Desk setup illustration，不冒充现场照片；不写生成方法和参考素材来源。
-- 产品正文之后、六个 FAQ 之前，三个固定版块仍只含“指定标题 + 指定原图转 WebP”，顺序不变，不套入卡片/交错布局。
-- 在 1920px 与 390px 下检查完整页面，尤其表格、卡片换行、图文堆叠和固定素材。review 中填写 content_richness_reviewed、layout_reference_reviewed；脚本不能判断文案充实程度或视觉质量。
+## Responsive and visual requirements
 
-## 人工交付复核
-来源每个采购相关事实有使用位置或合理排除理由；各模块增加新信息；买家能理解产品、配置和使用条件；原创图片与文字匹配；封面 + 至少四张组图均为独立重新生成且 reviewed。将生成记录和逐图复核结论写入 evidence / review，不能只修改 generated=true。
+- Use a shared 1400px maximum width, centered on wide screens and 100% wide on mobile. Scope authored selectors to `.xb_import_v2`.
+- Suggested image/text ratios are 1:1 or 5:6. Preserve a sensible mobile reading order; do not use visual CSS reordering that conflicts with semantic order.
+- Where cards are appropriate, use three or four columns on desktop, two on tablets, and generally one on phones. Short specification cards may use two columns if text remains readable.
+- Use `minmax(0,1fr)` for grids, explicit image aspect ratios and width/height, consistent spacing and typography, and restrained accent colors. Do not bake essential text into images.
+- Keep image roles separate: CSV cover/gallery assets are not reused in `content`. Generate separate detail visuals, close-ups, and scenes as needed. Do not impose an arbitrary one- or two-image cap or force every card to have an image.
+- Prioritize accurate product structure and plausible use. Label illustrative scenes briefly when needed, for example `Desk setup illustration.` Do not imply on-site photography or publish generation methods and reference-source explanations.
+- The three fixed blocks after the product body and company profile remain exact heading + supplied image converted to WebP, in their required order. Do not turn them into cards or alternating layouts. The six FAQs follow them.
+- Inspect the full page at 1920px and 390px, especially tables, card wrapping, stacked content, and fixed assets. Record `content_richness_reviewed` and `layout_reference_reviewed`; the script cannot judge writing depth or visual quality.
 
+## Manual delivery review
 
+Every purchasing-relevant source fact has a destination or a justified exclusion. Each module adds information. Buyers can understand the product, configuration, and use conditions. Generated images match the copy. The cover and at least four gallery images are distinct, newly generated, and individually reviewed. Record generation provenance and per-image review conclusions in evidence/review; changing `generated=true` is insufficient.
 
-## 最新版块约束（优先于上述线框）
+## Current section constraints
 
-所有版块外层左右 padding 为 0，桌面和手机都只保留适当上下间距。版块标题固定为加粗居中的 H2。双栏仅用于图片与完整文字块、或彼此独立的主题；同一段文字不能拆到左右栏或用 column-count 分流。长段落保持连续阅读，可自然换行，不能为了视觉平衡人工拆半。
+These override the older wireframe suggestions above. Set outer left/right section padding to zero on desktop and mobile, retaining appropriate vertical spacing. Section headings are bold, centered H2s. Two columns may hold an image and a complete text block, or independent topics; never split one paragraph across columns or use `column-count` to distribute it. Long paragraphs remain continuous and wrap naturally, without being cut in half for visual balance.
 
-检查 1920px 和 390px 的外层左右 padding、H2 居中及段落完整性。
+Check horizontal padding, centered H2s, and paragraph continuity at 1920px and 390px.

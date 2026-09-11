@@ -1,41 +1,41 @@
-# 字段、执行与验收契约
+# Fields, workflow, and acceptance contract
 
 ## CSV
 
-必须保留原字段、顺序、行数、UTF-8；使用 csv 模块处理 HTML 中的逗号、引号和换行，不使用文本按行拆 CSV。上传参数 row-number 是含表头计数的逻辑记录序号，首条商品为 2，不是多行 HTML 的物理行号。
+Preserve original columns, column order, row count, and UTF-8 encoding. Use the CSV module to handle commas, quotes, and newlines in HTML; do not split CSV records by physical text lines. The uploader's `--row-number` is the logical record number including the header: the first product is row 2, regardless of multiline HTML cells.
 
-| 字段 | 规则 |
-|---|---|
-| link、IMGBB_API_KEY | 原值逐字符保留；不得日志输出密钥 |
-| 未知列 | 原值保留 |
-| content | 英文产品正文 → 固定公司简介 → Factory Photo → MiBA Logo Options → MiBA Accessory Options → FAQ（最底部），统一居中容器最大宽度 1400px |
-| title | 自然英文商品标题；目标品牌为 MiBA，按语义自然使用，用于页面主标题，不堆关键词 |
-| remark | 1–2 句真实产品价值说明 |
-| pro_fields | 4–8 条已验证卖点，各占一行，无项目符号、点、横线或编号 |
-| file_name | 简短描述性小写英文数字及连字符，无扩展名；各行唯一 |
-| seo_title1 | 单独编写，英文 Title Case，50–65 字符，目标约 60；主词靠前，MiBA 品牌通常放末尾；各行唯一 |
-| seo_desc | 单独编写，不超过 140 字符；正文支持的优势与用途；各行唯一 |
-| thumb | 封面图的 ImgBB WebP Direct URL |
-| scenario_image | 原创场景图的 ImgBB WebP Direct URL，不是 Markdown |
-| images | 1 张重新生成 cover + 至少 4 张重新生成 gallery，封面在前，有序换行分隔 `<url>|<alt>`；排除 detail/scenario/supplied_static 详情图；alt 英文、准确且不同 |
+| Field | Rule |
+| --- | --- |
+| `link`, `IMGBB_API_KEY` | Preserve the original values character for character; never log keys. |
+| Unknown columns | Preserve their original values. |
+| `content` | English product body → fixed company profile → Factory Photo → MiBA Logo Options → MiBA Accessory Options → final FAQ, inside one centered responsive container with a 1400px maximum width. |
+| `title` | Natural English product heading; use MiBA where it reads naturally, without keyword stuffing. |
+| `remark` | One or two sentences describing supported product value. |
+| `pro_fields` | Four to eight verified selling points, one per line, without leading bullets, dots, dashes, or numbering. |
+| `file_name` | Short descriptive lowercase letters, digits, and hyphens; no extension; unique per row. |
+| `seo_title1` | Independently written English Title Case, 50–65 characters, targeting about 60; primary keyword near the start, MiBA usually at the end; unique per row. |
+| `seo_desc` | Independently written, no more than 140 characters, with benefits and uses supported by the body; unique per row. |
+| `thumb` | ImgBB WebP Direct URL for the cover. |
+| `scenario_image` | ImgBB WebP Direct URL for a newly generated application scene, not Markdown. |
+| `images` | One newly generated cover followed by at least four newly generated gallery images, in display order, one `<url>|<alt>` per line. Exclude detail/scenario/supplied_static assets. Use accurate, distinct English alt text. |
 
-seo_title1 的 50–65 是用户文档编辑区间，不称为 Google 强制限制。全部新增文案英文，不自动继承来源品牌；品牌展示按 MiBA 人工核验，不将来源供应商资质归属于 MiBA。template 不再必填；已有 template 列仅保留源值，不使用其内容。
+The 50–65 character SEO title range is the user's editorial standard, not a mandatory Google limit. All new copy is English. Do not inherit source brands; manually review branding against MiBA and do not attribute supplier qualifications to MiBA. A `template` column is optional; preserve it when present without using its content.
 
-公司简介使用 [固定公司简介规则](company-profile.md) 和随包固定 HTML，逐字保留用户文案，置于三个固定图片之前。
+Use the [fixed company profile rules](company-profile.md) and bundled HTML. Preserve the supplied copy verbatim and place it before the three fixed images.
 
 ## pro_fields
 
-`pro_fields`：4–8 条已验证卖点，各占一行，无项目符号、点、横线或编号。
+Write four to eight verified selling points, each on its own line in the CSV cell, without leading bullets, dots, dashes, or numbering.
 
-## 文件布局与命令
+## File layout and commands
 
-路径均可使用绝对路径，以下相对路径以任务输出目录为工作目录；scripts 路径需替换为本技能的真实绝对路径。
+Absolute paths are supported. Relative output paths below assume the task output directory as the working directory; replace `scripts/` with the actual absolute path to the skill's scripts.
 
 ```text
 input_completed.csv
 images/<file_name>/<descriptive-name>.webp
-staging/<file_name>/             # 不属于最终图库
-evidence/<file_name>.json        # 来源、事实、关键词和缺失信息，无密钥
+staging/<file_name>/             # Not part of the final gallery
+evidence/<file_name>.json        # Sources, facts, keywords, and gaps; no keys
 upload-manifests/<file_name>.json
 review.json
 validation.json
@@ -47,11 +47,11 @@ python scripts/upload_images_to_imgbb.py images/product-slug --csv-file input.cs
 python scripts/compose_content.py --detail-file product.detail.html --image-manifest images/product-slug.image-manifest.json --upload-manifest upload-manifests/product-slug.json --output content.html
 ```
 
-拼接脚本不负责写 CSV，使用 csv.DictWriter 回填生成内容，不要输出行数据到终端。
+The composer does not write CSV files. Use `csv.DictWriter` to populate generated content without printing row data to the terminal.
 
 ## review.json
 
-这是代理实际完成检查后写的记录，不是预先填 true 的通行证。所有 populated 行均要记录，空行不需要。缺事实/页面不可访问为 skipped；固定图片缺失、图像无法正确生成、上传失败等为 blocked；success 表示人工及自动校验待共同验证的成功候选。
+Write this record after actually performing the checks. Do not prefill true values as a shortcut. Include every populated row; blank rows do not need records. Use `skipped` for unavailable source pages or insufficient facts, and `blocked` for missing fixed assets, inaccurate image generation, upload failure, or similar execution blockers. A `success` record identifies a candidate that must pass both manual and automated validation.
 
 ```json
 {
@@ -72,19 +72,19 @@ python scripts/compose_content.py --detail-file product.detail.html --image-mani
         "seo_document_reviewed": true
       },
       "evidence": "evidence/product-slug.json",
-      "notes": ["说明检查依据，不能写密钥"]
+      "notes": ["Describe the evidence for completed checks; never include keys."]
     }
   ],
-  "deployment_pending": ["CMS 外层 H1、canonical、图片 HTTP、Sitemap、robots 和真实用户 CWV 待上线环境检查"]
+  "deployment_pending": ["Verify the CMS H1, canonical URL, image HTTP responses, Sitemap, robots, and real-user Core Web Vitals on the deployed site."]
 }
 ```
 
-脚本自动检查 1400px 外层容器、组图与详情图分离、字段、源值保留、三个固定版块的标题、图片及顺序、FAQ/H1、元数据长度与唯一性、新增图片 URL 与 alt、本地 WebP 和图像角色尺寸。人工必须额外检查原文规范全部条目、商品一致性、独立文案、事实证据、图片视觉原创性/准确性、CSS 作用域及页面渲染。`success` 的人工记录不能覆盖自动错误。退出码 0 表示本地候选通过且无跳过，2 表示部分完成，1 表示校验错误；部署未验始终单独报告。
+The validator checks the 1400px outer container, gallery/detail separation, fields, preserved source values, exact fixed headings/images/order, FAQ/H1 structure, metadata length and uniqueness, image URLs and alt text, local WebP files, and role-specific dimensions. Manually review every optimization requirement, product identity, independent copy, factual evidence, image originality and accuracy, CSS scope, and rendered output. A manual `success` flag cannot override automatic errors. Exit code 0 means local candidates passed without skipped or blocked rows; 2 means partial completion; 1 means validation errors. Always report unverified deployment requirements separately.
 
-校验器从 `--images-dir` 的父目录读取 `upload-manifests/<file_name>.json`，对照上传结果、本地文件、图片角色和 CSV URL；CSV images 仅对照 cover/gallery，详情图则对照完整上传清单，二者不能混用。原创产品详情图使用 generated=true；末尾三个指定图使用 supplied_static，明确豁免 AI 生成要求，并仍需人工核查该标记真实。跳过/阻塞行的生成字段保留输入值，草稿放在表外，避免被误导入。
+The validator reads `upload-manifests/<file_name>.json` from the parent of `--images-dir` and reconciles uploads, local files, image roles, and CSV URLs. CSV `images` is matched only against cover/gallery; content images are matched against the full upload manifest. Do not mix the two sets. Newly generated detail images use `generated=true`. The three supplied fixed images use `supplied_static` and are explicitly exempt from AI generation, but their provenance still requires manual review. Preserve input values in generated fields for skipped/blocked rows; keep drafts outside the import table.
 
-## 源码来源
+## Source attribution
 
-上传辅助脚本基于 xiaodong-wu/xinbada-alibaba-product-import 提交 `1f5b0cc6b3cbe69dbf1cf9c1641d03c56ac93480` 的 MIT 许可代码，本版增加长 HTML CSV 字段支持；保留随包 LICENSE。其他流程与校验按本次需求重写。Google 规范附件为用户指定文件的完整原文快照，不是自动更新的 Google 官方规则库。
+The uploader is based on MIT-licensed code from `xiaodong-wu/xinbada-alibaba-product-import`, commit `1f5b0cc6b3cbe69dbf1cf9c1641d03c56ac93480`, with support added for large HTML CSV fields. Retain the bundled LICENSE. Other workflow and validation components were rewritten for this task. The bundled Google requirements are an English translation of the user-supplied document snapshot, not an automatically updated official Google rules library.
 
-资料覆盖审查按 [source-coverage.md](source-coverage.md) 执行；source_coverage_reviewed 必须基于实际逐项核对。脚本只检查复核标记，不证明网页采集完整或内容正确。1400px 静态容器检查不代替实际浏览器布局检查。
+Follow [Source coverage](source-coverage.md). Set `source_coverage_reviewed` only after an actual item-by-item review. The script checks review flags; it does not prove complete extraction or accurate content. A static 1400px container check does not replace browser layout review.

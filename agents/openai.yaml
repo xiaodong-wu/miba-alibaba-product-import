@@ -1,4 +1,4 @@
 interface:
-  display_name: "Miba 商品导入"
-  short_description: "生成英文详情并追加三个固定图片版块，原创应用场景图，按 Google 规范生成商品 CSV"
-  default_prompt: "使用 $miba-alibaba-product-import 处理 Alibaba 商品 CSV，生成符合 Google 优化规范的英文详情及原创场景图，并在末尾追加指定的三个标题加图片版块。"
+  display_name: "Miba Product Import"
+  short_description: "Create English MiBA product CSVs with images and SEO fields"
+  default_prompt: "Use $miba-alibaba-product-import to process this Alibaba product CSV, generate English details and product images, and place the company profile and three fixed image blocks before the final six FAQs."

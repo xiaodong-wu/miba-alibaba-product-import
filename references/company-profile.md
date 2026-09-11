@@ -1,15 +1,15 @@
-# 固定公司简介
+# Fixed company profile
 
-公司简介固定放在产品正文之后、Factory Photo 之前。完整顺序：产品正文 → 公司简介 → Factory Photo → MiBA Logo Options → MiBA Accessory Options → 六个 FAQ（最底部）。
+Place the company profile after the product body and before Factory Photo. The complete order is: product body → company profile → Factory Photo → MiBA Logo Options → MiBA Accessory Options → six final FAQs.
 
-使用 [company-profile.html](../assets/company-profile.html) 的固定内容，由 compose_content.py 自动插入一次。文案由用户直接提供，是目标公司资料，不取自 Alibaba 商品页。不得自动纠正拼写、语法、标点、大小写、空格或改写内容，包括原文 openning、fastly、parter、Provice、shippment 等；不替换市场、交期、付款、地址及联系方式，不按每个商品重新生成。
+Use the fixed content in [company-profile.html](../assets/company-profile.html), inserted exactly once by `compose_content.py`. This is company information supplied directly by the user, not extracted from Alibaba. Do not automatically correct spelling, grammar, punctuation, capitalization, spacing, or wording, including `openning`, `fastly`, `parter`, `Provice`, and `shippment`. Do not replace markets, lead times, payment terms, addresses, or contact details, or regenerate the profile for each product.
 
-允许调整布局、留白、字体和响应式表现；链接的显示文字保持原文。布局包含五条编号优势、宗旨与市场、运输与付款两栏、联系信息；手机端改为单列。所有 CSS 限定在 .xb_import_v2.miba_company_profile 内，整体不超过1400px。不把公司文案、CSS或内部说明放入 pro_fields 或 SEO 字段，不作为每个商品的专属交期/配置承诺。
+Layout, spacing, typography, and responsive presentation may be adjusted; keep link display text unchanged. The layout contains five numbered strengths, mission and markets, shipping/payment columns, and contact information, stacking on mobile. Scope all CSS to `.xb_import_v2.miba_company_profile` and keep the complete detail within a 1400px maximum width. Do not put company copy, CSS, or internal notes into `pro_fields` or SEO fields, or treat the profile as product-specific configuration or lead-time promises.
 
-固定图片仍各自只有标题与原图；FAQ 保持六个且位于公司简介和三个图片区之后。图片无需因插入纯文字版块重新生成或上传。校验器核对公司版块完整内容、仅出现一次及其位置；缺失或被改写不能标记成功。
+Each fixed image block still contains only its heading and original image. Keep exactly six FAQs after the profile and all three image blocks. Inserting the text-only company profile does not require regenerating or reuploading images. The validator checks the complete profile, its single occurrence, and its position; missing or rewritten copy cannot pass.
 
-视觉要求：参考用户原有排版，白底、紧凑图文层级、橙色子版块标题；五项优势按编号顺序排列并加粗原有重点词，运输、付款和联系字段在桌面端对齐，手机端自然换行。不要 SVG 或其他图标，不使用装饰性卡片网格、深色底块、巨型编号或大面积装饰。允许加粗和标签对齐，文案仍保持原样。
+Follow the user's supplied visual style: white background, compact hierarchy, and orange subsection headings. Keep five strengths in numbered order with the existing emphasis bolded. Align shipping, payment, and contact fields on desktop and allow natural wrapping on mobile. Do not add SVGs, icons, decorative card grids, dark panels, giant numbers, or large decorative areas. Bold emphasis and aligned labels are allowed; preserve the wording.
 
-版面宽度与排版：Company Profile 及运输、付款、联系版块标题均使用加粗居中的 H2，正文正常使用完整可用宽度，不整体缩至半屏。五项优势、宗旨和市场各自通栏；运输与付款左右两栏，地址与联系方式左右两栏。正文和段内标签左对齐，可一行展示的内容自然通行；窄屏自动单列。完整详情最大宽度1400px。
+Use bold, centered H2 headings for Company Profile and its shipping, payment, and contact sections. Use the full available body width rather than narrowing the whole profile to half the screen. Strengths, mission, and markets each span the full width. Shipping and payment are independent side-by-side columns, as are address and contact information. Body text and inline labels are left-aligned; short content flows naturally on one line. Stack columns on narrow screens. The complete detail has a 1400px maximum width.
 
-公司简介外层左右 padding 固定为 0，手机端相同；只保留上下间距。同一段文字不得拆成左右两份，属性名称和值在同一段自然显示。独立运输与付款版块仍可并排，不拆分段落。
+Keep outer left/right profile padding at zero on desktop and mobile, with vertical spacing only. Do not split a paragraph into two columns; field names and values remain together in their paragraph. Independent shipping and payment sections may sit beside one another without splitting their text.

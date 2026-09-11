@@ -1,24 +1,24 @@
-# 封闭于当前商品链接的资料覆盖检查
+# Source coverage limited to the current product link
 
-目标是尽可能完整利用当前商品的真实资料。先采集再组织，避免只凭首屏标题写通用营销文案。继续遵守用户的 Google 优化文档：参数完整准确，表达独立自然，不照搬原文。
+Use as much verified information about the current product as possible. Collect first, then organize; do not write generic marketing copy from the first-screen title alone. Follow the user's product optimization requirements: complete and accurate specifications, independent natural writing, and no copied source prose.
 
-## 采集范围
+## Collection scope
 
-在可用浏览器中逐段阅读和展开当前商品页，滚动加载后续内容，按需打开参数、描述和选项。覆盖以下实际存在的区域：
+Read and expand the current product page in an available browser. Scroll to load later content and open specifications, descriptions, and options as needed. Cover these areas where they actually exist:
 
-- 完整标题、产品概览、关键属性和全部规格参数；型号、尺寸、材质、重量、功能、功率或配方等。
-- 产品选项和变体：颜色、规格、配置、兼容设备/适用范围、可选配件；保持各变体对应关系，不能混成同一个配置。
-- 全部相关详情文字、参数表、图库和详情图片中可读的尺寸、标签、安装/使用步骤、结构特点及注意事项。
-- 包装内容、单品/外箱包装尺寸与重量、装箱量、运输保护、交付、起订量、样品和定制要求。
-- 当前页面的认证和测试说明、FAQ、相关使用说明、演示视频中确实可访问的信息。
-- 当前商品有关的供应商/生产/质检能力：记录主体，不能自动归属为目标品牌的工厂、证书或客户案例。
-- 价格、数量阶梯、运费、库存、优惠和交期如可见则记录获取时间与条件。未经用户确认，不把来源商家的动态报价或承诺改写成目标网站的固定承诺。
+- Full title, overview, key attributes, and complete specifications: model, dimensions, materials, weight, functions, power, formula, and other relevant facts.
+- Options and variants: colors, sizes, configurations, compatible devices/applications, and optional accessories. Preserve variant relationships rather than combining them into one configuration.
+- Relevant description text, tables, gallery images, and detail images, including readable dimensions, labels, installation/use instructions, structural features, and limitations.
+- Package contents, individual/carton dimensions and weights, packing quantities, shipping protection, delivery, minimum order quantities, samples, and customization requirements.
+- Certification/test descriptions, FAQs, usage guidance, and genuinely accessible demonstration-video information on the current page.
+- Supplier, production, and quality-control capabilities relevant to the product. Record the responsible entity; do not automatically treat its factory, certificates, or customer cases as the target brand's.
+- Visible prices, quantity tiers, shipping costs, stock, promotions, and lead times, with access times and conditions. Without user confirmation, do not convert dynamic supplier quotes or promises into fixed target-site commitments.
 
-排除导航、广告、推荐商品、其他商品的参数、个人账户内容和无关评价。视频无法读取、图片文字不清晰、区域无法展开时，记录缺口，不猜测；不要反复进行无进展的访问尝试。
+Exclude navigation, advertising, recommended products, other products' specifications, personal account information, and irrelevant reviews. Record inaccessible videos, illegible image text, and areas that cannot be expanded. Do not guess or repeat attempts that make no progress.
 
-## 资料到详情的映射
+## Map source information to the detail
 
-新增 evidence JSON 的 content_plan，逐模块记录标题、来源事实、买家问题、文字展开要点、S1–S9 布局选择、所需原创图片与省略理由，并建立 coverage 数组，每项记录：
+Add `content_plan` to the evidence JSON. For each module, record its heading, source facts, buyer question, writing points, S1–S9 layout choice where applicable, required generated images, and omission reasons. Add a `coverage` array with entries such as:
 
 ```json
 {
@@ -30,8 +30,8 @@
 }
 ```
 
-access 取 read / unavailable / not_present；遇到冲突在事实条目中保留各来源及处理理由。每个已获取的重要事实都要有使用位置或合理的未采用理由，不以“简洁”为由遗漏采购所需的完整参数、使用限制或包装配置。重复事实合并；营销夸张、来源商家身份及不适合发布的动态交易信息可保留在证据文件并说明不进入正文的理由。
+Use `read`, `unavailable`, or `not_present` for `access`. For conflicting facts, preserve the competing sources and resolution rationale. Every important collected fact needs a destination or justified exclusion. Do not omit necessary specifications, use limitations, or package configurations merely to be concise. Consolidate duplicates. Exaggerated marketing, supplier identity, and unsuitable dynamic commercial information may remain in evidence with reasons for exclusion from the product body.
 
-写完后反向核对：原文所有有用小节是否覆盖、关键参数及数值单位是否遗漏、不同变体是否混淆、图片独有事实是否已转为可抓取文字、来源信息是否被错误变成目标公司承诺。六个 FAQ 补充采购决策问题，不通过 FAQ 数量或固定正文长度限制资料完整性。
+Review backward after writing: are all useful source sections accounted for, are numbers and units complete, are variants distinct, are image-only facts represented as crawlable text, and has source information been wrongly turned into a target-company commitment? The six FAQs supplement buying decisions; their count and an arbitrary body length must not limit source coverage.
 
-尽最大程度使用该链接资料，同时遵守原有的独立文案、事实准确和详情图片重新创作要求。充分使用原图中的真实信息，仍要按已有规则生成独立详情应用图；不能直接照搬 Alibaba 详情整图。三个用户指定固定素材按既有例外执行。
+Use the current link comprehensively while preserving independent writing, factual accuracy, and newly generated detail imagery. Extract useful facts from original images but do not copy full Alibaba detail graphics. The three supplied fixed assets retain their explicit exception.
