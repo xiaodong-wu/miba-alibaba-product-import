@@ -24,8 +24,8 @@ def prepare(plan_path: Path, output: Path, min_quality: int = 70):
         names.add(name)
         if role not in {'cover', 'gallery', 'detail', 'scenario', 'supplied_static'}:
             raise ValueError('unknown image role')
-        if role in {'detail', 'scenario'} and item.get('generated') is not True:
-            raise ValueError('detail/scenario images must be recorded as newly generated')
+        if role in {'cover', 'gallery', 'detail', 'scenario'} and item.get('generated') is not True:
+            raise ValueError('cover/gallery/detail/scenario images must be recorded as newly generated')
         source = (plan_path.parent / item['source']).resolve()
         if not source.is_file():
             raise ValueError('an image source is missing')

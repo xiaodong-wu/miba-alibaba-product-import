@@ -1,16 +1,18 @@
 # Miba Alibaba Product Import V2
 
-用于 Codex 的 Alibaba 商品导入技能：从商品链接提取事实，生成英文详情与原创应用场景图，转换 WebP、上传 ImgBB，并回填及校验 CSV。
+用于 Codex 的 Alibaba 商品导入技能：从商品链接完整提取可核实资料，生成模块化英文详情、产品封面、组图与应用场景图，转换 WebP、上传 ImgBB，并回填及校验 CSV。
 
 ## 功能
 
 - 保留输入 CSV 的原字段、未知列与行顺序。
 - 独立编写英文标题、SEO 元数据、产品详情及六个采购 FAQ。
-- 使用 imagegen 创作详情图和应用概念图，按规则处理尺寸和 WebP 压缩。
-- 在详情末尾依次追加 Factory Photo、MiBA Logo Options、MiBA Accessory Options 三个标题加图片版块。
+- 使用 imagegen 重新生成 1 张封面、至少 4 张独立组图及详情/应用图，保留真实产品身份并重新设计画面，按规则处理尺寸和 WebP 压缩。
+- 详情顺序固定为：英文产品正文 → 随包公司简介 → Factory Photo → MiBA Logo Options → MiBA Accessory Options → 六个 FAQ。
+- 详情最大宽度 1400px，各版块左右外层 padding 为 0，版块标题使用加粗居中的 H2，兼顾移动端阅读。
+- `pro_fields` 在同一 CSV 单元格内保留 4–8 条真实换行属性，从第二行开始以 ``|`-+#$&*|`` 为行首分隔符。
 - 附带图片处理、上传、HTML 拼接、输出校验脚本及测试。
 
-技能名称不代表商品必须使用 Miba 品牌；目标品牌以用户提供的信息为准。
+技能名称不代表商品必须使用 Miba 品牌；目标品牌以用户提供的信息为准。随包固定公司简介保留 MiBA 文案，属于固定版块例外，不自动套用到商品参数或 SEO 中。
 
 ## 安装
 
@@ -36,7 +38,7 @@ python -m pip install -r requirements.txt
 从 assets/content_import_template.csv 复制空白表头到任务目录，为每条商品填写 link 与 IMGBB_API_KEY，然后在 Codex 中请求：
 
 ```text
-使用 $miba-alibaba-product-import-v2 处理这个 Alibaba 商品 CSV，生成英文详情及原创应用场景图，并在末尾追加三个固定图片版块。
+使用 $miba-alibaba-product-import-v2 处理这个 Alibaba 商品 CSV，生成英文详情、封面、至少四张组图及应用场景图，按规则插入固定公司简介和三个固定图片版块，并将六个 FAQ 放在最底部。
 ```
 
 可同时提供目标品牌、公司资料和最新产品优化规范；没有品牌信息时生成中性文案。

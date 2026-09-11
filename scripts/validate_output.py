@@ -1,6 +1,6 @@
 """Compare CSVs and validate detail with three fixed image blocks; no upload and no secret values in reports."""
 import argparse
-from compose_content import FIXED, fixed_suffix
+from compose_content import FIXED, fixed_suffix, company_profile, split_faq, FRAME_OPEN, FRAME_CLOSE, LAYOUT_STYLE
 import csv
 import json
 import re
@@ -13,8 +13,9 @@ from PIL import Image
 GENERATED = {'title', 'remark', 'content', 'pro_fields', 'file_name', 'seo_title1',
              'seo_desc', 'thumb', 'scenario_image', 'images'}
 REQUIRED = GENERATED | {'link', 'IMGBB_API_KEY'}
-CHECKS = ('facts_verified', 'fixed_blocks_verified', 'original_detail_images_verified',
-          'visual_review_passed', 'seo_document_reviewed')
+CHECKS = ('facts_verified', 'source_coverage_reviewed', 'fixed_blocks_verified', 'original_detail_images_verified',
+          'visual_review_passed', 'seo_document_reviewed', 'generated_gallery_verified',
+          'content_richness_reviewed', 'layout_reference_reviewed')
 CJK = re.compile(r'[\u3400-\u9fff\U00020000-\U0002fa1f]')
 SLUG = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*')
 
@@ -127,6 +128,11 @@ def validate(source, output, images_dir, review):
         if not (row.get('IMGBB_API_KEY') or '').strip():
             err(n, 'row API key is empty')
         content = row.get('content') or ''
+        framed_content = content
+        if content.startswith(FRAME_OPEN) and content.endswith(FRAME_CLOSE):
+            framed_content = content[len(FRAME_OPEN):-len(FRAME_CLOSE)]
+        else:
+            err(n, 'content requires the centered responsive 1400px outer container')
         prefix = content
         for f in GENERATED:
             value = prefix if f == 'content' else row.get(f, '')
@@ -146,9 +152,24 @@ def validate(source, output, images_dir, review):
         slug = row.get('file_name', '')
         if not SLUG.fullmatch(slug):
             err(n, 'file_name must be a lowercase kebab-case slug')
-        lines = [line.strip() for line in row.get('pro_fields', '').splitlines() if line.strip()]
-        if not 4 <= len(lines) <= 8 or any(re.match(r'^(?:[.•●▪◦‣⁃*+\-–—]|\d+[.)])', x) for x in lines):
+        pro_fields = row.get('pro_fields', '')
+        normalized_fields = pro_fields.replace('\r\n', '\n')
+        lines = normalized_fields.split('\n')
+        separator = '|`-+#$&*|'
+        if separator in lines[0] or any(not x.startswith(separator) or x.count(separator) != 1 for x in lines[1:]):
+            err(n, 'pro_fields first line must have no delimiter; each subsequent line must begin with exactly one |`-+#$&*|')
+        lines = [lines[0]] + [x[len(separator):] if x.startswith(separator) else x for x in lines[1:]]
+        plain_fields = '\n'.join(lines)
+        if '\r' in normalized_fields or any(c in normalized_fields for c in ('\v', '\f', '\x85', '\u2028', '\u2029')):
+            err(n, 'pro_fields must use LF or CRLF, not alternative line separators')
+        if not 3 <= normalized_fields.count('\n') <= 7:
+            err(n, 'pro_fields CSV cell must retain 3 to 7 real newline characters after CSV readback')
+        if not 4 <= len(lines) <= 8 or any(re.match(r'^(?:[.•●▪◦‣⁃*+\-–—>#]|\d+[.)](?!\d))', x) for x in lines):
             err(n, 'pro_fields must be 4 to 8 unbulleted plain lines')
+        if pro_fields != pro_fields.strip() or any(not x.strip() or x != x.strip() for x in lines):
+            err(n, 'pro_fields must not contain blank lines or leading/trailing whitespace')
+        if re.search(r'\\[nr]|<[^>]*>|`|\*\*|__|!?\[[^\]]*\]\([^)]*\)|&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);', plain_fields, re.I):
+            err(n, 'pro_fields must use actual newlines and plain text without HTML, entities or Markdown')
         gallery = {}
         alts = set()
         for line in row.get('images', '').splitlines():
@@ -162,8 +183,12 @@ def validate(source, output, images_dir, review):
             alts.add(alt.strip().casefold())
         for field in ('thumb', 'scenario_image'):
             url = row.get(field, '')
-            if not direct(url) or url not in gallery:
-                err(n, f'{field} must be a Direct WebP URL included in images')
+            if not direct(url):
+                err(n, f'{field} must be a Direct WebP URL')
+        if row.get('thumb') not in gallery:
+            err(n, 'thumb must be included in the product gallery')
+        if row.get('scenario_image') in gallery:
+            err(n, 'scenario_image must not be included in the product gallery')
         parsed, full = HTML(prefix), HTML(content)
         if not parsed.namespaced:
             err(n, 'prefix is missing xb_import_v2 wrapper')
@@ -178,15 +203,17 @@ def validate(source, output, images_dir, review):
         if not parsed.images:
             err(n, 'new detail must contain original application imagery')
         for img in parsed.images:
-            if img.get('src') not in gallery or not img.get('alt', '').strip():
-                err(n, 'new image must have a gallery Direct URL and nonempty alt')
+            if not direct(img.get('src', '')) or not img.get('alt', '').strip():
+                err(n, 'detail image must have a Direct URL and nonempty alt')
+            if img.get('src') in gallery:
+                err(n, 'detail image must not appear in CSV images')
             if not (img.get('width') or '').isdigit() or not (img.get('height') or '').isdigit():
                 err(n, 'new image requires explicit numeric width and height')
         if parsed.images and parsed.images[0].get('loading') == 'lazy':
             err(n, 'first new image must not be lazy loaded')
         if row.get('scenario_image') not in {im.get('src') for im in parsed.images}:
             err(n, 'new detail must include the application image')
-        if 'application concept visualization' not in ''.join(parsed.parts).lower():
+        if not re.search(r'\b(?:illustration|concept visualization|illustrative scene)\b', ' '.join(parsed.parts).lower()):
             err(n, 'new detail must label the simulated application visualization')
         if SLUG.fullmatch(slug):
             folder = images_dir / slug
@@ -198,8 +225,6 @@ def validate(source, output, images_dir, review):
                     err(n, 'final image folder must contain only WebP files')
                 if len(files) != len(records) or {f.name for f in files} != {r['file'] for r in records}:
                     err(n, 'image manifest and actual files differ')
-                if len(gallery) != len(records):
-                    err(n, 'gallery and local image counts differ')
                 if not any(r['role'] == 'scenario' for r in records):
                     err(n, 'missing local scenario image')
                 upload_path = images_dir.parent / 'upload-manifests' / (slug + '.json')
@@ -207,24 +232,43 @@ def validate(source, output, images_dir, review):
                 if uploaded.get('complete') is not True:
                     err(n, 'upload manifest is incomplete')
                 local_records = {r['file']: r for r in records}
+                if sum(r.get('role') == 'cover' for r in records) != 1:
+                    err(n, 'exactly one generated cover is required')
+                if sum(r.get('role') == 'gallery' for r in records) < 4:
+                    err(n, 'at least four generated gallery images are required, excluding cover')
+                ordered_gallery = [r['file'] for r in records if r.get('role') in {'cover', 'gallery'}]
+                uploaded_by_file = {r['file']: r['direct_url'] for r in uploaded['uploaded']}
+                if list(gallery) != [uploaded_by_file.get(f) for f in ordered_gallery]:
+                    err(n, 'CSV gallery order must follow the image plan')
+                if not ordered_gallery or local_records[ordered_gallery[0]].get('role') != 'cover':
+                    err(n, 'cover must be first in the image plan gallery order')
                 urls = {r['direct_url']: local_records.get(r['file']) for r in uploaded['uploaded']}
-                if set(urls) != set(gallery) or any(v is None for v in urls.values()):
-                    err(n, 'upload manifest, local images and CSV gallery do not match')
-                tail = fixed_suffix(records, uploaded)
-                if not content.endswith(tail):
-                    err(n, 'content must end with the three exact title/image blocks in order')
+                if (len(uploaded['uploaded']) != len(records) or
+                        {r['file'] for r in uploaded['uploaded']} != set(local_records) or
+                        len(urls) != len(records) or any(v is None for v in urls.values())):
+                    err(n, 'upload manifest and all local images do not match')
+                expected_gallery = [r['direct_url'] for r in uploaded['uploaded']
+                                    if local_records.get(r['file'], {}).get('role') in {'cover', 'gallery'}]
+                if set(gallery) != set(expected_gallery):
+                    err(n, 'CSV images must contain only and all cover/gallery images')
+                for img in parsed.images:
+                    local = urls.get(img.get('src'))
+                    if not local or local.get('role') not in {'detail', 'scenario', 'supplied_static'}:
+                        err(n, 'detail image must map to an uploaded detail/scenario/static asset')
+                tail = company_profile() + fixed_suffix(records, uploaded) + LAYOUT_STYLE
+                before_faq, faq_section = split_faq(framed_content)
+                if not framed_content.rstrip().endswith(faq_section) or HTML(faq_section).faq != 6:
+                    err(n, 'all six FAQ items must be in the final section after fixed blocks')
+                if not before_faq.endswith(tail):
+                    err(n, 'fixed company profile and three exact image blocks must precede the final FAQ')
                 else:
-                    detail = content[:-len(tail)]
-                    if 'miba_fixed_block' in detail:
-                        err(n, 'fixed blocks must occur only once at the end')
+                    detail = before_faq[:-len(tail)]
+                    if 'miba_fixed_block' in detail or 'miba_company_profile' in detail:
+                        err(n, 'company profile and fixed images must occur only once before FAQ')
                     for img in HTML(detail).images:
                         local = urls.get(img.get('src'))
                         if not local or local.get('generated') is not True:
                             err(n, 'product detail uses an image without generated provenance')
-                fixed_urls = {r['file']: r['direct_url'] for r in uploaded['uploaded']}
-                expected_order = [fixed_urls[name] for _, name in FIXED]
-                if list(gallery)[-3:] != expected_order:
-                    err(n, 'gallery must end with the three fixed images in order')
                 scenario = urls.get(row.get('scenario_image'))
                 cover = urls.get(row.get('thumb'))
                 if not scenario or scenario.get('role') != 'scenario':
@@ -244,8 +288,8 @@ def validate(source, output, images_dir, review):
                             err(n, 'cover/gallery must be 800 by 800')
                         if record['role'] == 'scenario' and im.width < 1200:
                             err(n, 'scenario width is below 1200')
-                    if record['role'] in {'scenario', 'detail'} and record.get('generated') is not True:
-                        err(n, 'detail/scenario lacks generated-image provenance')
+                    if record['role'] in {'cover', 'gallery', 'scenario', 'detail'} and record.get('generated') is not True:
+                        err(n, 'cover/gallery/detail/scenario lacks generated-image provenance')
                     if record['role'] != 'scenario' and (folder / name).stat().st_size > 100_000:
                         warnings.append({'row_number': n, 'message': 'image exceeds 100 KB; confirm readability exception in review notes'})
             except (OSError, ValueError, KeyError, TypeError):

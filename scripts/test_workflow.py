@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from PIL import Image
-from compose_content import compose, FIXED
+from compose_content import compose, company_profile, FIXED, split_faq, FRAME_OPEN, FRAME_CLOSE
 from prepare_images import prepare
 from validate_output import validate, REQUIRED, CHECKS
 from upload_images_to_imgbb import read_api_key
@@ -24,17 +24,18 @@ class WorkflowTests(unittest.TestCase):
                                custom_field='unchanged, "quoted"\r\ntext')
         self.row = self.source_row.copy()
         self.row.update(title='Xinbada Product for Daily Use', remark='Verified product description.',
-                        file_name='xinbada-product', pro_fields='One\nTwo\nThree\nFour',
+                        file_name='xinbada-product', pro_fields='One\n|`-+#$&*|Two\n|`-+#$&*|Three\n|`-+#$&*|Four',
                         seo_title1='Custom Product for Everyday Applications | Xinbada OEM',
                         seo_desc='Xinbada offers this product for verified applications with private label support.',
                         thumb='https://i.ibb.co/a/cover.webp',
                         scenario_image='https://i.ibb.co/a/scene.webp',
-                        images='https://i.ibb.co/a/cover.webp|Product on white\nhttps://i.ibb.co/a/scene.webp|Product application concept')
+                        images='https://i.ibb.co/a/cover.webp|Product on white')
         prefix = ('<section class="xb_import_v2"><h1>Xinbada Product</h1>'
                   '<p>Xinbada Industrial (Shenzhen) Group Co., Ltd.</p>'
                   '<img src="https://i.ibb.co/a/scene.webp" alt="Application" width="1200" height="800" loading="eager">'
                   '<p>Application concept visualization</p>' +
-                  ''.join('<article class="xb_faq_item"><h2>Question</h2><p>Answer</p></article>' for _ in range(6)) + '</section>')
+                  '<section class="xb_import_v2 miba_faq_section"><h2>FAQ</h2>' +
+                  ''.join('<article class="xb_faq_item"><h2>Question</h2><p>Answer</p></article>' for _ in range(6)) + '</section></section>')
         self.detail = prefix
         self.review = {'rows': [{'row_number': 2, 'status': 'success',
                                 'checks': {k: True for k in CHECKS}, 'evidence': 'evidence/test.json'}]}
@@ -44,17 +45,23 @@ class WorkflowTests(unittest.TestCase):
         records = []
         for name, role, size in [('cover', 'cover', (800, 800)), ('scene', 'scenario', (1200, 800))]:
             Image.new('RGB', size, 'white').save(folder / (name + '.webp'), 'WEBP')
-            records.append({'file': name + '.webp', 'role': role, 'generated': role == 'scenario'})
+            records.append({'file': name + '.webp', 'role': role, 'generated': True})
         uploaded = {'complete': True, 'uploaded': [
             {'file': 'cover.webp', 'direct_url': self.row['thumb']},
             {'file': 'scene.webp', 'direct_url': self.row['scenario_image']}]}
+        for i in range(4):
+            name = f'gallery-{i}.webp'
+            Image.new('RGB', (800, 800), (i * 40, 60, 90)).save(folder / name, 'WEBP')
+            records.append({'file': name, 'role': 'gallery', 'generated': True})
+            url = 'https://i.ibb.co/a/' + name
+            uploaded['uploaded'].append({'file': name, 'direct_url': url})
+            self.row['images'] += '\n' + url + f'|Distinct product view {i}'
         for title, filename in FIXED:
             Image.new('RGB', (1000, 600), 'white').save(folder / filename, 'WEBP')
             records.append({'file': filename, 'role': 'supplied_static', 'title': title,
                             'generated': False, 'width': 1000, 'height': 600})
             url = 'https://i.ibb.co/a/' + filename
             uploaded['uploaded'].append({'file': filename, 'direct_url': url})
-            self.row['images'] += '\n' + url + '|' + title
         self.row['content'] = compose(self.detail, records, uploaded)
         (self.images / 'xinbada-product.image-manifest.json').write_text(json.dumps({'images': records}))
         uploads = self.root / 'upload-manifests'
@@ -78,6 +85,106 @@ class WorkflowTests(unittest.TestCase):
 
     def test_wrong_fixed_title_rejected(self):
         self.row['content'] = self.row['content'].replace('<h2>Factory Photo</h2>', '<h2>Changed</h2>')
+        self.assertEqual(self.run_validation()['result'], 'failed')
+
+    def test_faq_follows_all_fixed_images(self):
+        content = self.row['content']
+        self.assertLess(content.index('miba-accessory-options.webp'), content.index('miba_faq_section'))
+        self.assertTrue(content.endswith('</section>' + FRAME_CLOSE))
+
+    def test_company_profile_is_before_fixed_images(self):
+        content = self.row['content']
+        self.assertIn(company_profile(), content)
+        self.assertLess(content.index('<section class="xb_import_v2 miba_company_profile">'), content.index('miba_fixed_blocks'))
+        self.assertIn('balance before shippment.', content)
+
+    def test_company_copy_change_or_omission_is_rejected(self):
+        original = self.row['content']
+        for modified in [original.replace(company_profile(), ''),
+                         original.replace('balance before shippment.', 'balance before shipment.')]:
+            with self.subTest(modified_length=len(modified)):
+                self.row['content'] = modified
+                self.assertEqual(self.run_validation()['result'], 'failed')
+
+    def test_duplicate_company_profile_is_rejected(self):
+        self.row['content'] = self.row['content'].replace(company_profile(), company_profile() * 2)
+        self.assertEqual(self.run_validation()['result'], 'failed')
+
+    def test_faq_before_fixed_images_is_rejected(self):
+        inner = self.row['content'][len(FRAME_OPEN):-len(FRAME_CLOSE)]
+        body, faq = split_faq(inner)
+        self.row['content'] = FRAME_OPEN + faq + body + FRAME_CLOSE
+        self.assertEqual(self.run_validation()['result'], 'failed')
+
+    def test_content_after_faq_is_rejected(self):
+        self.row['content'] = self.row['content'][:-len(FRAME_CLOSE)] + '<p>Extra content</p>' + FRAME_CLOSE
+        self.assertEqual(self.run_validation()['result'], 'failed')
+
+    def test_pro_fields_preserves_real_csv_newlines_and_numbers(self):
+        for newline in ['\n', '\r\n']:
+            with self.subTest(newline=repr(newline)):
+                self.row['pro_fields'] = (newline + '|`-+#$&*|').join([
+                    '15W wireless output with compatible devices',
+                    '7.5W output for a compatible device',
+                    'Compact design for desks, with adjustable viewing',
+                    'Logo printing in a "custom" finish'])
+                self.assertEqual(self.run_validation()['errors'], [])
+                with (self.root / 'output.csv').open(encoding='utf-8', newline='') as f:
+                    self.assertEqual(next(csv.DictReader(f))['pro_fields'], self.row['pro_fields'])
+
+    def test_pro_fields_delimiter_position_and_display(self):
+        valid = self.row['pro_fields']
+        self.assertEqual(valid.replace('|`-+#$&*|', '').splitlines(), ['One', 'Two', 'Three', 'Four'])
+        for value in [valid.replace('|`-+#$&*|', '', 1), '|`-+#$&*|' + valid,
+                      valid.replace('|`-+#$&*|Two', '|`-+#$&*||`-+#$&*|Two'),
+                      valid.replace('|`-+#$&*|Two', '|`-+#$&*| Two')]:
+            with self.subTest(value=value):
+                self.row['pro_fields'] = value
+                self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
+
+    def test_pro_fields_rejects_markup_and_fake_newlines(self):
+        for value in ['One<br>Two\nThree\nFour\nFive',
+                      '<b>One</b>\nTwo\nThree\nFour',
+                      'One\\nExtra\nTwo\nThree\nFour',
+                      '**One**\nTwo\nThree\nFour',
+                      '[One](https://example.com)\nTwo\nThree\nFour',
+                      'One&nbsp;extra\nTwo\nThree\nFour',
+                      '- One\nTwo\nThree\nFour']:
+            with self.subTest(value=value):
+                self.row['pro_fields'] = value
+                self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
+
+    def test_pro_fields_rejects_non_php_line_separators(self):
+        for separator in ['\u2028', '\u2029', '\x85', '\v', '\f']:
+            with self.subTest(separator=repr(separator)):
+                self.row['pro_fields'] = separator.join(['One', 'Two', 'Three', 'Four'])
+                self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
+
+    def test_pro_fields_rejects_blank_lines_and_padding(self):
+        for value in ['One\n\nTwo\nThree\nFour', 'One\nTwo\nThree\nFour\n',
+                      'One\n Two\nThree\nFour', 'One\nTwo \nThree\nFour']:
+            with self.subTest(value=value):
+                self.row['pro_fields'] = value
+                self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
+
+    def test_detail_images_excluded_from_gallery(self):
+        self.assertEqual(self.run_validation()['result'], 'passed')
+        original_gallery = self.row['images']
+        for url in [self.row['scenario_image'], 'https://i.ibb.co/a/factory-photo.webp']:
+            self.row['images'] += '\n' + url + '|Not a product gallery image'
+            self.assertEqual(self.run_validation()['result'], 'failed')
+            self.row['images'] = original_gallery
+
+    def test_unknown_detail_url_rejected(self):
+        self.row['content'] = self.row['content'].replace('/a/scene.webp', '/a/unknown.webp')
+        self.assertEqual(self.run_validation()['result'], 'failed')
+
+    def test_width_larger_than_1400_rejected(self):
+        self.row['content'] = self.row['content'].replace('max-width:1400px', 'max-width:1600px')
+        self.assertEqual(self.run_validation()['result'], 'failed')
+
+    def test_source_coverage_review_required(self):
+        self.review['rows'][0]['checks']['source_coverage_reviewed'] = False
         self.assertEqual(self.run_validation()['result'], 'failed')
 
     def test_template_column_not_required(self):
@@ -134,7 +241,7 @@ class WorkflowTests(unittest.TestCase):
         Image.new('RGBA', (1600, 1000), (50, 100, 150, 150)).save(self.root / 'raw.png')
         plan = self.root / 'plan.json'
         plan.write_text(json.dumps({'images': [
-            {'source': 'raw.png', 'name': 'product-cover', 'role': 'cover'},
+            {'source': 'raw.png', 'name': 'product-cover', 'role': 'cover', 'generated': True},
             {'source': 'raw.png', 'name': 'application-concept', 'role': 'scenario', 'generated': True, 'width': 1200}]}))
         target = self.root / 'prepared'
         results = prepare(plan, target)
@@ -157,6 +264,44 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(records[0]['quality'], 82)
         self.assertEqual(len(records[0]['source_sha256']), 64)
         self.assertFalse(records[0]['generated'])
+
+    def test_four_gallery_required_excluding_cover(self):
+        manifest = self.images / 'xinbada-product.image-manifest.json'
+        data = json.loads(manifest.read_text())
+        data['images'] = [r for r in data['images'] if r['file'] != 'gallery-3.webp']
+        manifest.write_text(json.dumps(data))
+        (self.images / 'xinbada-product' / 'gallery-3.webp').unlink()
+        upload = self.root / 'upload-manifests' / 'xinbada-product.json'
+        u = json.loads(upload.read_text())
+        u['uploaded'] = [r for r in u['uploaded'] if r['file'] != 'gallery-3.webp']
+        upload.write_text(json.dumps(u))
+        self.row['images'] = '\n'.join(self.row['images'].splitlines()[:-1])
+        result = self.run_validation()
+        self.assertTrue(any('at least four' in e['message'] for e in result['errors']))
+
+    def test_all_gallery_and_cover_must_be_generated(self):
+        manifest = self.images / 'xinbada-product.image-manifest.json'
+        original = manifest.read_text()
+        for role in ('cover', 'gallery'):
+            data = json.loads(original)
+            next(r for r in data['images'] if r['role'] == role)['generated'] = False
+            manifest.write_text(json.dumps(data))
+            self.assertTrue(any('provenance' in e['message'] for e in self.run_validation()['errors']))
+        manifest.write_text(original)
+
+    def test_preparation_rejects_ungenerated_cover(self):
+        Image.new('RGB', (800, 800), 'white').save(self.root / 'raw.png')
+        plan = self.root / 'bad-plan.json'
+        for role in ('cover', 'gallery'):
+            plan.write_text(json.dumps({'images': [{'source': 'raw.png', 'name': 'photo', 'role': role, 'generated': False}]}))
+            with self.assertRaises(ValueError):
+                prepare(plan, self.root / 'rejected-output')
+
+    def test_richness_and_layout_review_required(self):
+        for key in ('generated_gallery_verified', 'content_richness_reviewed', 'layout_reference_reviewed'):
+            self.review['rows'][0]['checks'][key] = False
+            self.assertEqual(self.run_validation()['result'], 'failed')
+            self.review['rows'][0]['checks'][key] = True
 
     def test_large_multiline_csv_key_read(self):
         self.source_row['template'] = 'x' * 150_000 + '\r\n' + self.template
