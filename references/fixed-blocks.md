@@ -2,23 +2,23 @@
 
 无需 HTML 模板。英文产品正文和固定公司简介结束后，严格按以下顺序插入三个版块；随后输出六个 FAQ，FAQ 必须位于整份详情最底部。标题取原始文件名去掉扩展名，大小写和空格保持不变：
 
-| 顺序 | H2 标题 | 首选本机文件 | WebP 文件名 |
+| 顺序 | H2 标题 | 随包文件（相对技能目录） | WebP 文件名 |
 |---|---|---|---|
-| 1 | Factory Photo | `C:\Users\wulic\Desktop\miba\Factory Photo.png` | factory-photo.webp |
-| 2 | MiBA Logo Options | `C:\Users\wulic\Desktop\miba\MiBA Logo Options.png` | miba-logo-options.webp |
-| 3 | MiBA Accessory Options | `C:\Users\wulic\Desktop\miba\MiBA Accessory Options.png` | miba-accessory-options.webp |
+| 1 | Factory Photo | `assets/fixed-blocks/Factory Photo.png` | factory-photo.webp |
+| 2 | MiBA Logo Options | `assets/fixed-blocks/MiBA Logo Options.png` | miba-logo-options.webp |
+| 3 | MiBA Accessory Options | `assets/fixed-blocks/MiBA Accessory Options.png` | miba-accessory-options.webp |
 
-本机文件不可用时读取随包 `assets/fixed-blocks/` 同名副本并告知。仅转 WebP 和合理压缩，保留完整画面、原始像素尺寸、比例和图中文字；不改品牌、不裁剪、不用 AI 重绘。这三张指定素材不受“新详情图必须 AI 原创”限制，不代表所有文案都必须带 MiBA 品牌。
+直接读取技能目录下 `assets/fixed-blocks/` 中的同名文件，不查找用户本机其他目录、不要求重新上传。包内文件缺失则报告技能素材缺失。仅转 WebP 和合理压缩，保留完整画面、原始像素尺寸、比例和图中文字；不改品牌、不裁剪、不用 AI 重绘。这三张指定素材不受“新详情图必须 AI 原创”限制，不代表所有文案都必须带 MiBA 品牌。
 
 每版块仅 `section > h2 + img`，不加段落、图注、列表或按钮。alt 使用标题，width/height 使用实际尺寸，loading=lazy，图片在最大 1400px 的完整详情容器内响应式全宽且保持比例。压缩后文件名不用于显示标题。
 
-每行 image-plan 的 images 数组在产品图后追加以下三个对象：
+每行 image-plan 的 images 数组在产品图后追加以下三个对象。生成实际清单时，将 `<skill-dir>` 替换为当前技能目录的绝对路径，不按用户桌面路径或任务工作目录查找：
 
 ```json
 [
-  {"source":"C:/Users/wulic/Desktop/miba/Factory Photo.png","name":"factory-photo","role":"supplied_static","generated":false},
-  {"source":"C:/Users/wulic/Desktop/miba/MiBA Logo Options.png","name":"miba-logo-options","role":"supplied_static","generated":false},
-  {"source":"C:/Users/wulic/Desktop/miba/MiBA Accessory Options.png","name":"miba-accessory-options","role":"supplied_static","generated":false}
+  {"source":"<skill-dir>/assets/fixed-blocks/Factory Photo.png","name":"factory-photo","role":"supplied_static","generated":false},
+  {"source":"<skill-dir>/assets/fixed-blocks/MiBA Logo Options.png","name":"miba-logo-options","role":"supplied_static","generated":false},
+  {"source":"<skill-dir>/assets/fixed-blocks/MiBA Accessory Options.png","name":"miba-accessory-options","role":"supplied_static","generated":false}
 ]
 ```
 

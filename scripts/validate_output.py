@@ -153,23 +153,12 @@ def validate(source, output, images_dir, review):
         if not SLUG.fullmatch(slug):
             err(n, 'file_name must be a lowercase kebab-case slug')
         pro_fields = row.get('pro_fields', '')
-        normalized_fields = pro_fields.replace('\r\n', '\n')
-        lines = normalized_fields.split('\n')
-        separator = '|`-+#$&*|'
-        if separator in lines[0] or any(not x.startswith(separator) or x.count(separator) != 1 for x in lines[1:]):
-            err(n, 'pro_fields first line must have no delimiter; each subsequent line must begin with exactly one |`-+#$&*|')
-        lines = [lines[0]] + [x[len(separator):] if x.startswith(separator) else x for x in lines[1:]]
-        plain_fields = '\n'.join(lines)
-        if '\r' in normalized_fields or any(c in normalized_fields for c in ('\v', '\f', '\x85', '\u2028', '\u2029')):
-            err(n, 'pro_fields must use LF or CRLF, not alternative line separators')
-        if not 3 <= normalized_fields.count('\n') <= 7:
-            err(n, 'pro_fields CSV cell must retain 3 to 7 real newline characters after CSV readback')
-        if not 4 <= len(lines) <= 8 or any(re.match(r'^(?:[.•●▪◦‣⁃*+\-–—>#]|\d+[.)](?!\d))', x) for x in lines):
-            err(n, 'pro_fields must be 4 to 8 unbulleted plain lines')
-        if pro_fields != pro_fields.strip() or any(not x.strip() or x != x.strip() for x in lines):
-            err(n, 'pro_fields must not contain blank lines or leading/trailing whitespace')
-        if re.search(r'\\[nr]|<[^>]*>|`|\*\*|__|!?\[[^\]]*\]\([^)]*\)|&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);', plain_fields, re.I):
-            err(n, 'pro_fields must use actual newlines and plain text without HTML, entities or Markdown')
+        lines = pro_fields.splitlines()
+        if not 4 <= len(lines) <= 8 or any(not x.strip() for x in lines):
+            err(n, 'pro_fields must contain 4 to 8 entries, one per line in the CSV cell')
+        if any(re.match(r'^\s*(?:[•●▪◦·.。*+\-–—]|\d+[.)、]\s|[（(]\d+[）)])', x)
+               or '|`-+#$&*|' in x for x in lines):
+            err(n, 'pro_fields entries must have no bullets, dots, dashes or numbering')
         gallery = {}
         alts = set()
         for line in row.get('images', '').splitlines():

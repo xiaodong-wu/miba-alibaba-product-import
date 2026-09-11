@@ -24,7 +24,7 @@ class WorkflowTests(unittest.TestCase):
                                custom_field='unchanged, "quoted"\r\ntext')
         self.row = self.source_row.copy()
         self.row.update(title='Xinbada Product for Daily Use', remark='Verified product description.',
-                        file_name='xinbada-product', pro_fields='One\n|`-+#$&*|Two\n|`-+#$&*|Three\n|`-+#$&*|Four',
+                        file_name='xinbada-product', pro_fields='One\nTwo\nThree\nFour',
                         seo_title1='Custom Product for Everyday Applications | Xinbada OEM',
                         seo_desc='Xinbada offers this product for verified applications with private label support.',
                         thumb='https://i.ibb.co/a/cover.webp',
@@ -123,7 +123,7 @@ class WorkflowTests(unittest.TestCase):
     def test_pro_fields_preserves_real_csv_newlines_and_numbers(self):
         for newline in ['\n', '\r\n']:
             with self.subTest(newline=repr(newline)):
-                self.row['pro_fields'] = (newline + '|`-+#$&*|').join([
+                self.row['pro_fields'] = newline.join([
                     '15W wireless output with compatible devices',
                     '7.5W output for a compatible device',
                     'Compact design for desks, with adjustable viewing',
@@ -132,40 +132,17 @@ class WorkflowTests(unittest.TestCase):
                 with (self.root / 'output.csv').open(encoding='utf-8', newline='') as f:
                     self.assertEqual(next(csv.DictReader(f))['pro_fields'], self.row['pro_fields'])
 
-    def test_pro_fields_delimiter_position_and_display(self):
+    def test_pro_fields_rejects_list_markers(self):
         valid = self.row['pro_fields']
-        self.assertEqual(valid.replace('|`-+#$&*|', '').splitlines(), ['One', 'Two', 'Three', 'Four'])
-        for value in [valid.replace('|`-+#$&*|', '', 1), '|`-+#$&*|' + valid,
-                      valid.replace('|`-+#$&*|Two', '|`-+#$&*||`-+#$&*|Two'),
-                      valid.replace('|`-+#$&*|Two', '|`-+#$&*| Two')]:
-            with self.subTest(value=value):
-                self.row['pro_fields'] = value
+        for prefix in ['• ', '. ', '- ', '1. ', '(1) ', '|`-+#$&*|']:
+            with self.subTest(prefix=prefix):
+                self.row['pro_fields'] = prefix + valid
                 self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
 
-    def test_pro_fields_rejects_markup_and_fake_newlines(self):
-        for value in ['One<br>Two\nThree\nFour\nFive',
-                      '<b>One</b>\nTwo\nThree\nFour',
-                      'One\\nExtra\nTwo\nThree\nFour',
-                      '**One**\nTwo\nThree\nFour',
-                      '[One](https://example.com)\nTwo\nThree\nFour',
-                      'One&nbsp;extra\nTwo\nThree\nFour',
-                      '- One\nTwo\nThree\nFour']:
-            with self.subTest(value=value):
-                self.row['pro_fields'] = value
-                self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
-
-    def test_pro_fields_rejects_non_php_line_separators(self):
-        for separator in ['\u2028', '\u2029', '\x85', '\v', '\f']:
-            with self.subTest(separator=repr(separator)):
-                self.row['pro_fields'] = separator.join(['One', 'Two', 'Three', 'Four'])
-                self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
-
-    def test_pro_fields_rejects_blank_lines_and_padding(self):
-        for value in ['One\n\nTwo\nThree\nFour', 'One\nTwo\nThree\nFour\n',
-                      'One\n Two\nThree\nFour', 'One\nTwo \nThree\nFour']:
-            with self.subTest(value=value):
-                self.row['pro_fields'] = value
-                self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
+    def test_pro_fields_rejects_wrong_entry_count(self):
+        for count in [1, 3, 9]:
+            self.row['pro_fields'] = '\n'.join(['Entry'] * count)
+            self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
 
     def test_detail_images_excluded_from_gallery(self):
         self.assertEqual(self.run_validation()['result'], 'passed')

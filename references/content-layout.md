@@ -51,4 +51,4 @@ Current override: Read [Product identity and MiBA layout](identity-and-miba-layo
 
 所有版块外层左右 padding 为 0，桌面和手机都只保留适当上下间距。版块标题固定为加粗居中的 H2。双栏仅用于图片与完整文字块、或彼此独立的主题；同一段文字不能拆到左右栏或用 column-count 分流。长段落保持连续阅读，可自然换行，不能为了视觉平衡人工拆半。
 
-预览必须同时展示 CSV 回读的 pro_fields：先删除完整专用分隔符 ``|`-+#$&*|``，再模拟 nl2br() 将真实 LF/CRLF 转为显示用 br，确认一行一条；仅在 HTML 预览转换，CSV 字段仍为纯文本。检查 1920px 和 390px 的外层左右 padding、H2 居中及段落完整性。
+检查 1920px 和 390px 的外层左右 padding、H2 居中及段落完整性。

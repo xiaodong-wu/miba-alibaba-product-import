@@ -19,7 +19,7 @@ Preserve its actual [shape/material/connections/package proportions] faithfully.
 Show it in [supported application] with physically plausible installation or use.
 Preserve the referenced product geometry, observed state and factual information purpose.
 Create an independent composition, setting, palette and information hierarchy; do not copy the source visual template or merely replace its text/background.
-Use only the user's explicitly supplied target brand; otherwise create an unbranded image.
+Use MiBA when branding is shown. Do not inherit supplier/example brands or invent a physical logo imprint; not every image needs a logo.
 Do not invent specifications, certifications,
 customer projects, labels or performance evidence. [Target aspect ratio and dimensions].
 ```
