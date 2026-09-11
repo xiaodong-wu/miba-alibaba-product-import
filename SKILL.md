@@ -91,7 +91,7 @@ Use the bundled uploader with the `IMGBB_API_KEY` from each CSV row; never pass 
 
 Set `thumb` to the cover and `scenario_image` to the new application image. **CSV `images` contains only cover/gallery assets**, in manifest display order: cover first, then at least four gallery images, one `<url>|<English alt>` entry per line. Exclude detail images, scenes and all fixed assets. Detail images appear only in `content`; the scene also populates `scenario_image`. Do not add detail images to satisfy an obsolete validator.
 
-`pro_fields` contains four to eight verified selling points, one per line, without leading bullets, dots, dashes or numbering.
+`pro_fields` contains four to eight verified product attributes, one `Field:Value` entry per line in the CSV cell. Use an English field name and an ASCII colon (`:`), with a nonempty value; a space after the colon is optional. Do not write standalone selling-point sentences, leading bullets, dots, dashes, numbering or legacy separators. Follow the format example in [Fields and workflow](references/schema-and-workflow.md#pro_fields), using only attributes and values supported for the current product.
 
 Convert and upload every image role and retain all files in local and upload manifests. Populate fields only with the returned `data.url` Direct link in the form `https://i.ibb.co/...webp`. Resolve `content` images from uploaded detail/scenario/supplied_static records; they need not appear in CSV `images`. Preserve the exact fixed headings, assets and order.
 

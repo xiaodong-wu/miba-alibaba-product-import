@@ -11,7 +11,7 @@ Preserve original columns, column order, row count, and UTF-8 encoding. Use the 
 | `content` | English product body → fixed company profile → Factory Photo → MiBA Logo Options → MiBA Accessory Options → final FAQ, inside one centered responsive container with a 1400px maximum width. |
 | `title` | Natural English product heading; use MiBA where it reads naturally, without keyword stuffing. |
 | `remark` | One or two sentences describing supported product value. |
-| `pro_fields` | Four to eight verified selling points, one per line, without leading bullets, dots, dashes, or numbering. |
+| `pro_fields` | Four to eight verified product attributes, one `Field:Value` entry per line, using an English field name, ASCII colon and nonempty value; no leading bullets, dots, dashes or numbering. |
 | `file_name` | Short descriptive lowercase letters, digits, and hyphens; no extension; unique per row. |
 | `seo_title1` | Independently written English Title Case, 50–65 characters, targeting about 60; primary keyword near the start, MiBA usually at the end; unique per row. |
 | `seo_desc` | Independently written, no more than 140 characters, with benefits and uses supported by the body; unique per row. |
@@ -25,7 +25,19 @@ Use the [fixed company profile rules](company-profile.md) and bundled HTML. Pres
 
 ## pro_fields
 
-Write four to eight verified selling points, each on its own line in the CSV cell, without leading bullets, dots, dashes, or numbering.
+Write four to eight verified product attributes, each on its own line inside the same CSV cell, in `Field:Value` format. Use an English field name and an ASCII colon (`:`); both the field name and value must be nonempty. A space after the colon is optional. Commas, spaces, quoted text, numbers and units may remain inside values. Separate entries with real newlines, not literal `\n` text or the legacy separator. Do not use standalone selling-point sentences or leading bullets, dots, dashes or numbering.
+
+Format example supplied by the user:
+
+```text
+Material:ABS, Fabric
+Color:Black
+Speaker output:5W
+Delivery:FOB,EXW,FCA
+Country of Origin: Made in China
+```
+
+These lines demonstrate formatting, not mandatory fields or facts for every product. Choose labels and verified values relevant to the current product. Do not transfer the example's fabric material, speaker power, delivery terms or origin to another product without supporting evidence. Delivery terms must apply to the target offer; source supplier terms alone do not establish MiBA's terms.
 
 ## File layout and commands
 

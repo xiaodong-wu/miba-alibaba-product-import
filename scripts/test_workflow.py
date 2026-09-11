@@ -24,7 +24,7 @@ class WorkflowTests(unittest.TestCase):
                                custom_field='unchanged, "quoted"\r\ntext')
         self.row = self.source_row.copy()
         self.row.update(title='Xinbada Product for Daily Use', remark='Verified product description.',
-                        file_name='xinbada-product', pro_fields='One\nTwo\nThree\nFour',
+                        file_name='xinbada-product', pro_fields='Material:ABS\nColor:Black\nOutput:15W\nOrigin:China',
                         seo_title1='Custom Product for Everyday Applications | Xinbada OEM',
                         seo_desc='Xinbada offers this product for verified applications with private label support.',
                         thumb='https://i.ibb.co/a/cover.webp',
@@ -124,13 +124,31 @@ class WorkflowTests(unittest.TestCase):
         for newline in ['\n', '\r\n']:
             with self.subTest(newline=repr(newline)):
                 self.row['pro_fields'] = newline.join([
-                    '15W wireless output with compatible devices',
-                    '7.5W output for a compatible device',
-                    'Compact design for desks, with adjustable viewing',
-                    'Logo printing in a "custom" finish'])
+                    'Wireless output:15W with compatible devices',
+                    'Output mode: 7.5W for a compatible device',
+                    'Material:ABS, Fabric',
+                    'Logo printing: A "custom" finish'])
                 self.assertEqual(self.run_validation()['errors'], [])
                 with (self.root / 'output.csv').open(encoding='utf-8', newline='') as f:
                     self.assertEqual(next(csv.DictReader(f))['pro_fields'], self.row['pro_fields'])
+
+    def test_pro_fields_accepts_user_format_example(self):
+        self.row['pro_fields'] = '\n'.join([
+            'Material:ABS, Fabric',
+            'Color:Black',
+            'Speaker output:5W',
+            'Delivery:FOB,EXW,FCA',
+            'Country of Origin: Made in China'])
+        self.assertEqual(self.run_validation()['errors'], [])
+        with (self.root / 'output.csv').open(encoding='utf-8', newline='') as f:
+            self.assertEqual(next(csv.DictReader(f))['pro_fields'], self.row['pro_fields'])
+
+    def test_pro_fields_rejects_missing_field_value_or_ascii_colon(self):
+        for entry in ['Plain selling point', 'Material：ABS', ':ABS', '  :ABS',
+                      'Material:', 'Material:   ']:
+            with self.subTest(entry=entry):
+                self.row['pro_fields'] = '\n'.join([entry, 'Color:Black', 'Output:15W', 'Origin:China'])
+                self.assertTrue(any('Field:Value' in e['message'] for e in self.run_validation()['errors']))
 
     def test_pro_fields_rejects_list_markers(self):
         valid = self.row['pro_fields']
@@ -141,7 +159,7 @@ class WorkflowTests(unittest.TestCase):
 
     def test_pro_fields_rejects_wrong_entry_count(self):
         for count in [1, 3, 9]:
-            self.row['pro_fields'] = '\n'.join(['Entry'] * count)
+            self.row['pro_fields'] = '\n'.join(['Attribute:Value'] * count)
             self.assertTrue(any('pro_fields' in e['message'] for e in self.run_validation()['errors']))
 
     def test_detail_images_excluded_from_gallery(self):

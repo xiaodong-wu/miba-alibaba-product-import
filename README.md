@@ -8,7 +8,7 @@ It can:
 - write independent English product descriptions, six purchasing FAQs, SEO titles, meta descriptions, and file-name slugs;
 - generate a new product cover, at least four distinct gallery images, separate detail images, and an application scene with imagegen;
 - preserve the product's observed structure, proportions, labels, and connections while creating independent image compositions;
-- generate `pro_fields` as four to eight plain lines without leading bullets, dots, dashes, numbering, or the legacy separator;
+- generate `pro_fields` as four to eight `Field:Value` lines (for example, `Material:ABS, Fabric` and `Color:Black`), with an English field name, ASCII colon and nonempty value; omit leading bullets, dots, dashes, numbering and the legacy separator;
 - insert the supplied company profile, then Factory Photo, MiBA Logo Options, and MiBA Accessory Options, with all six FAQs at the bottom;
 - create responsive product details with a centered 1400px maximum width and bold, centered H2 section headings;
 - convert images to WebP, upload them to ImgBB, and populate the CSV with Direct links;

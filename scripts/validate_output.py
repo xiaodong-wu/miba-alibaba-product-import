@@ -159,6 +159,11 @@ def validate(source, output, images_dir, review):
         if any(re.match(r'^\s*(?:[•●▪◦·.。*+\-–—]|\d+[.)、]\s|[（(]\d+[）)])', x)
                or '|`-+#$&*|' in x for x in lines):
             err(n, 'pro_fields entries must have no bullets, dots, dashes or numbering')
+        for line in lines:
+            field, separator, value = line.partition(':')
+            if not separator or not field.strip() or not value.strip():
+                err(n, 'pro_fields entries must use Field:Value with an ASCII colon and nonempty field and value')
+                break
         gallery = {}
         alts = set()
         for line in row.get('images', '').splitlines():
